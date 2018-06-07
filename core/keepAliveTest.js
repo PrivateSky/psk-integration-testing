@@ -1,5 +1,5 @@
-require("../../engine/core").enableTesting();
-var assert=require("double-check").assert;
+require("../../../engine/core").enableTesting();
+var assert = $$.requireModule("double-check").assert;
 
 $$.loadLibrary("keepAliveLib", "keepAliveLib");
 

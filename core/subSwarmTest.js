@@ -1,6 +1,6 @@
+require("../../../engine/core").enableTesting();
+var assert = $$.requireModule("double-check").assert;
 
-require("../../engine/core").enableTesting();
-var assert=require("double-check").assert;
 $$.swarm.describe("subSwarm",{
     public:{
         value:"int"
@@ -10,8 +10,6 @@ $$.swarm.describe("subSwarm",{
         this.return(null,v1 + v2);
     }
 });
-
-
 
 var f = $$.swarm.create("simpleSwarm", {
     begin:function(callback,a1,a2){

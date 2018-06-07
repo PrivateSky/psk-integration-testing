@@ -1,8 +1,5 @@
-
-
-require("../../engine/core").enableTesting();
-var assert=require("double-check").assert;
-
+require("../../../engine/core").enableTesting();
+var assert = $$.requireModule("double-check").assert;
 
 var worker = $$.flow.describe("worker", {
     makeSerialTask:function(value, bag, callback){

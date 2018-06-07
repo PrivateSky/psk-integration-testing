@@ -1,5 +1,5 @@
-var assert=require("double-check").assert;
-require("../../engine/core").enableTesting();
+require("../../../engine/core").enableTesting();
+var assert=$$.requireModule("double-check").assert;
 
 var f = $$.swarm.create("simpleSwarm", {
     protected:{

@@ -1,7 +1,8 @@
-require("../../engine/core").enableTesting();
+require("../../../engine/core").enableTesting();
 //require("../../engine/launcher");
 //require("../../libraries/launcher/debugFacilitator").debugForks(true);
-var assert=require("double-check").assert;
+var assert = $$.requireModule("double-check").assert;
+
 var f = $$.swarms.create("simpleSwarm", {
     type:"flow",       // flow, key, contract
     private:{

@@ -1,5 +1,5 @@
-require("../../engine/core").enableTesting();
-var assert=require("double-check").assert;
+require("../../../engine/core").enableTesting();
+var assert=$$.requireModule("double-check").assert;
 
 var f = $$.swarms.create("multiContextsSwarm", {
     type:"flow",       // flow, key, contract
