@@ -3,9 +3,9 @@ var nodes = [];
 var PDSFakes = [];
 
 var cfg = require("./simulationConfig").config;
-var pds = require("../../../../signsensus/signsensus/lib/InMemoryPDS");
-var cutil = require("../../../../signsensus/signsensus/lib/consUtil");
-var consensus = require("../../../../signsensus/signsensus/lib/consensusManager");
+var pds = require("../../../../modules/signsensus/lib/InMemoryPDS");
+var cutil = require("../../../../modules/signsensus/lib/consUtil");
+var consensus = require("../../../../modules/signsensus/lib/consensusManager");
 
 
 var maxPulse;

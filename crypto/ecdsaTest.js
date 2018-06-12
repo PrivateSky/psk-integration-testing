@@ -1,5 +1,5 @@
 const ecdsa = require("../ecdsa/lib/ECDSA").createECDSA('secp256k1');
-const assert = require("double-check").assert;
+var assert = $$.requireModule("double-check").assert;
 
 var dataToSign = "some data to sign";
 
