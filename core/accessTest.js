@@ -19,8 +19,7 @@ var f = $$.swarm.create("simpleSwarm", {
         }catch(err){
             console.log(err);
             assert.notEqual(err,null,"Error expected");
-        };
+        }
     }
 });
 f.begin();
-
