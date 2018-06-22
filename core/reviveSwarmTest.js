@@ -18,15 +18,18 @@ var f = $$.swarms.create("simpleSwarm", {
         this.result=this.a1+this.a2;
     }
 });
-fs.writeFileSync("./tmpSwarm/swarm",JSON.stringify(beesHealer.asJSON(f.getInnerValue(),"begin",[1,2],function(err,res){
-    console.log("writing done!")
-   if(err){
-       console.error(err);
-       return;
-   }
-}))
-);
-var data=fs.readFileSync("./tmpSwarm/swarm");
-var swarm=$$.swarmsInstancesManager.revive_swarm(JSON.parse(data));
-assert.equal(swarm.result,3,"Revitalisation failed");
-fs.unlinkSync("./tmpSwarm/swarm");
+
+$$.ensureFolderExists("tmpSwarm", function(){
+	fs.writeFileSync("./tmpSwarm/swarm",JSON.stringify(beesHealer.asJSON(f.getInnerValue(),"begin",[1,2],function(err,res){
+			console.log("writing done!");
+			if(err){
+				console.error(err);
+				return;
+			}
+		}))
+	);
+	var data=fs.readFileSync("./tmpSwarm/swarm");
+	var swarm=$$.swarmsInstancesManager.revive_swarm(JSON.parse(data));
+	assert.equal(swarm.result,3,"Revitalisation failed");
+	fs.unlinkSync("./tmpSwarm/swarm");
+});

@@ -1,8 +1,8 @@
-var KeyEncoder = require('../ecdsa/lib/keyEncoder');
+var KeyEncoder = require('../../../modules/pskcrypto/ecdsa/lib/keyEncoder');
 var ECPrivateKeyASN = KeyEncoder.ECPrivateKeyASN;
 var SubjectPublicKeyInfoASN = KeyEncoder.SubjectPublicKeyInfoASN;
 
-var assert = require('double-check').assert;
+var assert = require('../../../modules/double-check').assert;
 const crypto = require('crypto');
 const sign = crypto.createSign('sha256');
 const verify = crypto.createVerify('sha256');

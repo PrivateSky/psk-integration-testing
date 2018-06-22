@@ -1,11 +1,8 @@
-
-var ss = require("../ecdsa/lib/signatureHandler");
-
+var ss = require("../../../modules/pskcrypto/ecdsa/lib/signatureHandler");
 require("../../../engine/core").enableTesting();
 
 var sh = ss.getAgentSignatureHandler("testAgent");
-var assert=require('double-check').assert;
-
+var assert = $$.requireModule('double-check').assert;
 
 var test = $$.flow.describe("signatureTest", {
     public:{
@@ -37,9 +34,8 @@ var test = $$.flow.describe("signatureTest", {
         assert.equal(isGood, true, "Fail to verify signature");
         this.callback();
     }
-})
+});
+
 assert.callback("Signature test",function(callback){
     test().start(callback);
 });
-
-
