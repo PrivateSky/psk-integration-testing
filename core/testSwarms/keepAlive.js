@@ -1,6 +1,6 @@
 var assert=$$.requireModule("double-check").assert;
 
-var f = $$.swarm.create("keepAliveSwarm", {
+var f = $$.swarm.describe("keepAliveSwarm", {
     protected:{
         count:"int"
     },
