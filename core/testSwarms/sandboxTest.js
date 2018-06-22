@@ -1,5 +1,6 @@
 //require("../../engine/core").enableTesting();
-var assert=require("double-check").assert;
+var assert = $$.requireModule("double-check").assert;
+
 var f = $$.swarm.create("testSandBoxExecution", {
     public:{
         result:"int"
@@ -20,8 +21,7 @@ var f = $$.swarm.create("testSandBoxExecution", {
         this.swarm("crl\\agent\\jhon_smith", "onResult");
     },
     onResult:function(err, text){
-        assert.equal(err,null,"Error");
+        assert.equal(err,undefined,"Error");
         assert.equal(this.result,3,"Unexpected result");
-
     }
 });

@@ -1,5 +1,4 @@
-var assert = require("double-check").assert;
-
+var assert = $$.requireModule("double-check").assert;
 
 $$.swarm.describe("subSwarm",{
     public:{
@@ -24,5 +23,3 @@ var f = $$.swarm.create("mainSwarm", {
         this.callback();
     }
 });
-
-

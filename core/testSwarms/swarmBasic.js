@@ -1,5 +1,5 @@
+var assert = $$.requireModule("double-check").assert;
 
-var assert=require("double-check").assert;
 var f = $$.swarms.create("simpleSwarm", {
     type:"flow",       // flow, key, contract
     public:{

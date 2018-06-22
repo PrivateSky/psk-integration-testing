@@ -1,4 +1,4 @@
-var assert=require("double-check").assert;
+var assert = $$.requireModule("double-check").assert;
 
 var f = $$.swarm.create("accessSwarm", {
     protected:{
