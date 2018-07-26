@@ -18,7 +18,7 @@ var com = {
                 if(n.nodeName != from) {
                     setTimeout(function(){
                         n.recordPulse(from, pulse);
-                    }, cutil.getRandomInt(cfg.NETWORK_DELAY));
+                    }, getRandomInt(cfg.NETWORK_DELAY));
                 } else {
                     if(pulse.currentPulse > 2 * maxPulse){
                         afterFinish[from] = true;
@@ -36,8 +36,9 @@ var com = {
 
 //network.generateRandomTransaction();
 function terminate(){
-	process.send({pid: process.pid, stats: exports.exportStatistics()})
+	//process.send({pid: process.pid, stats: exports.exportStatistics()})
     exports.dumpVSDs();
+    console.log(exports.exportStatistics())
     process.exit();
 }
 
@@ -59,7 +60,7 @@ exports.init = function(config){
 
 toalGeneratedCounter = 0 ;
 exports.generateRandomTransaction = function() {
-    var nodeNumber = cutil.getRandomInt(cfg.MAX_NODES);
+    var nodeNumber = getRandomInt(cfg.MAX_NODES);
     var node = nodes[nodeNumber];
     var pdsHanlder = PDSFakes[nodeNumber].getHandler();
 
@@ -67,21 +68,21 @@ exports.generateRandomTransaction = function() {
         swarmName: "Swarm:" + toalGeneratedCounter
     };
 
-    var howMany = cutil.getRandomInt(cfg.MAX_KEYS_COUNT / 4) + 1;
+    var howMany = getRandomInt(cfg.MAX_KEYS_COUNT / 4) + 1;
     for (var i = 0; i < howMany; i++) {
-        var keyName = "key" + cutil.getRandomInt(cfg.MAX_KEYS_COUNT);
+        var keyName = "key" + getRandomInt(cfg.MAX_KEYS_COUNT);
 
-        var dice = cutil.getRandomInt(6);
+        var dice = getRandomInt(6);
 
         if (dice == 0) {  //concurrency issues
             keyName = "sameKey";
-            pdsHanlder.writeKey(keyName, cutil.getRandomInt(10000));
+            pdsHanlder.writeKey(keyName, getRandomInt(10000));
         }
 
         if (dice <= 4) {
             pdsHanlder.readKey(keyName);
         } else {
-            pdsHanlder.writeKey(keyName, cutil.getRandomInt(10000));
+            pdsHanlder.writeKey(keyName, getRandomInt(10000));
         }
     }
 
