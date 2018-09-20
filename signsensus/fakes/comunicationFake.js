@@ -3,7 +3,7 @@ var nodes = [];
 var PDSFakes = [];
 
 var cfg = require("./simulationConfig").config;
-var pds = require("../../../../modules/signsensus/lib/InMemoryPDS");
+var pds = require("../../../../modules/pskdb/lib/InMemoryPDS");
 var cutil = require("../../../../modules/signsensus/lib/consUtil");
 var consensus = require("../../../../modules/signsensus/lib/consensusManager");
 
