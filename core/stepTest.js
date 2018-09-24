@@ -1,5 +1,5 @@
 require("../../../engine/core").enableTesting();
-var assert = $$.requireModule("double-check").assert;
+var assert = require("double-check").assert;
 
 var f = $$.swarm.create("stepExample", {
     private:{

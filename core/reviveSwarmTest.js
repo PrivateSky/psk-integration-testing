@@ -1,8 +1,8 @@
 var fs = require("fs");
 require("../../../engine/core").enableTesting();
 
-var beesHealer = $$.requireModule("callflow").beesHealer;
-var assert = $$.requireModule("double-check").assert;
+var beesHealer = require("callflow").beesHealer;
+var assert = require("double-check").assert;
 
 var f = $$.swarms.create("simpleSwarm", {
     private:{

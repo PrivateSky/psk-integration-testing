@@ -2,7 +2,7 @@ var ss = require("../../../modules/pskcrypto/ecdsa/lib/signatureHandler");
 require("../../../engine/core").enableTesting();
 
 var sh = ss.getAgentSignatureHandler("testAgent");
-var assert = $$.requireModule('double-check').assert;
+var assert = require('double-check').assert;
 
 var test = $$.flow.describe("signatureTest", {
     public:{

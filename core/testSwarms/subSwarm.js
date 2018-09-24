@@ -1,4 +1,4 @@
-var assert = $$.requireModule("double-check").assert;
+var assert = require("double-check").assert;
 
 $$.swarm.describe("subSwarm",{
     public:{
