@@ -22,7 +22,7 @@ var worker = $$.flow.describe("worker", {
 });
 
 
-var f = $$.callflow.create("paralelSerialExample", {
+var f = $$.callflow.describe("paralelSerialExample", {
     public:{
         result:"int"
     },

@@ -28,7 +28,7 @@ function deleteFolderRecursive(folderPath) {
     }
 }
 
-const flow = $$.callflow.create('fileSharingTest', {
+const flow = $$.callflow.describe('fileSharingTest', {
     public: {
         channelId: 'string',
         fileId: 'string'
@@ -158,5 +158,5 @@ const flow = $$.callflow.create('fileSharingTest', {
 
 
 assert.callback("FileSharingServer test", function (callback) {
-    flow.start('test_image.jpeg', callback);
+    flow.describe('test_image.jpeg', callback);
 }, 1500);

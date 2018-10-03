@@ -1,7 +1,7 @@
 require("../../../engine/core").enableTesting();
 var assert = require("double-check").assert;
 
-var f = $$.flow.create("asyncExample", {
+var f = $$.flow.describe("asyncExample", {
     private:{
         a1:"int",
         a2:"int"
