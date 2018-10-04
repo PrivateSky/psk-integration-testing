@@ -1,7 +1,8 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
+require("callflow");
 var assert = require("double-check").assert;
 
-var f = $$.swarm.create("stepExample", {
+var f = $$.swarm.describe("stepExample", {
     private:{
         a1:"int",
         a2:"int"
@@ -23,7 +24,7 @@ var f = $$.swarm.create("stepExample", {
         assert.equal(this.result,6,"Results don't match");
         this.callback();
     }
-});
+})();
 
 assert.callback("Step test",function (callback) {
     f.begin(1, 2, callback);

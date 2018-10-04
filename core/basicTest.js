@@ -1,4 +1,4 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
 var assert= require("double-check").assert;
 
 var f = $$.flow.describe("FlowExample", {
@@ -14,5 +14,8 @@ var f = $$.flow.describe("FlowExample", {
     }
 })();
 
-f.begin(1, 2);
-assert.equal(f.result,3,"Results don't match");
+assert.callback("BasicTest", function(callback){
+    f.begin(1, 2);
+    assert.equal(f.result,3,"Results don't match");
+    callback();
+})

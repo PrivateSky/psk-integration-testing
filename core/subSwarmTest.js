@@ -1,4 +1,6 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
+require("callflow");
+require("launcher");
 var assert = require("double-check").assert;
 
 $$.swarm.describe("subSwarm",{
@@ -11,7 +13,7 @@ $$.swarm.describe("subSwarm",{
     }
 });
 
-var f = $$.swarm.create("simpleSwarm", {
+var f = $$.swarm.describe("simpleSwarm", {
     begin:function(callback,a1,a2){
         this.callback=callback;
         $$.swarm.start("subSwarm", "agent", "doSomething", a1,a2).onReturn(this.afterExecution);

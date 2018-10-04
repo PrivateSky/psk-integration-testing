@@ -1,11 +1,14 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
+require("callflow");
+require("launcher");
 var assert = require("double-check").assert;
 
-$$.requireLibrary("testSwarms", "testSwarms");
+$$.loadLibrary("testSwarms", "../../../libraries/testSwarms");
 
-var f = $$.swarm.create("testSwarms.keepAliveSwarm");
+var f = $$.swarm.start("testSwarms.keepAliveSwarm");
+
 assert.callback("Keep alive test",function (callback) {
-    f.swarm("system","begin",callback);
+    f.swarm("system", "begin", callback);
 })
 
 

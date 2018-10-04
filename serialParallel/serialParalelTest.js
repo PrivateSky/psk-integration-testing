@@ -1,4 +1,4 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
 var assert = require("double-check").assert;
 
 var worker = $$.flow.describe("worker", {
@@ -51,7 +51,7 @@ var f = $$.callflow.describe("paralelSerialExample", {
         assert.equal(this.result,105,"Failed in callback sequence");
         this.callback();
     }
-});
+})();
 
 assert.callback("Serial Parallel Test",function(callback){
     f.doSerial(callback);

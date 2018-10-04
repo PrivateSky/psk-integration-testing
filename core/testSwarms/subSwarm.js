@@ -10,7 +10,7 @@ $$.swarm.describe("subSwarm",{
     }
 });
 
-var f = $$.swarm.create("mainSwarm", {
+$$.swarm.describe("mainSwarm", {
     begin:function(callback,a1,a2){
         this.callback=callback;
         $$.swarm.start("testSwarms.subSwarm", "agent", "doSomething", a1,a2).onReturn(this.afterExecution);

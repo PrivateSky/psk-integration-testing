@@ -1,6 +1,6 @@
 var assert = require("double-check").assert;
 
-var f = $$.swarms.create("multiContextsSwarm", {
+$$.swarms.describe("multiContextsSwarm", {
     type:"flow",       // flow, key, contract
     public:{
         a1:"int",

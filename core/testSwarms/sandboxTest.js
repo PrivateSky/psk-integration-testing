@@ -1,7 +1,6 @@
-//require("../../engine/core").enableTesting();
 var assert = require("double-check").assert;
 
-var f = $$.swarm.create("testSandBoxExecution", {
+$$.swarm.describe("testSandBoxExecution", {
     public:{
         result:"int"
     },

@@ -1,7 +1,9 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
+require("callflow");
+require("launcher");
 var assert = require("double-check").assert;
 
-var f = $$.swarm.create("simpleSwarm", {
+var f = $$.swarm.describe("simpleSwarm", {
     protected:{
         prot_count:"int"
     },
@@ -21,5 +23,5 @@ var f = $$.swarm.create("simpleSwarm", {
             assert.notEqual(err,null,"Error expected");
         }
     }
-});
+})();
 f.begin();

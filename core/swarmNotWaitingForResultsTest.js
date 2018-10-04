@@ -1,9 +1,9 @@
-require("../../../engine/core").enableTesting();
-//require("../../engine/launcher");
-//require("../../libraries/launcher/debugFacilitator").debugForks(true);
+require("../../../builds/devel/pskruntime");
+require("callflow");
+require("launcher");
 var assert = require("double-check").assert;
 
-var f = $$.swarms.create("simpleSwarm", {
+var f = $$.swarms.describe("simpleSwarm", {
     type:"flow",       // flow, key, contract
     private:{
         a1: {
@@ -36,7 +36,8 @@ var f = $$.swarms.create("simpleSwarm", {
     afterExecution: function(err, res, wholeSwarm){
         this.callback();
     }
-});
+})();
+
 assert.callback("SwarmNotWaitingForResults",function(callback){
   f.begin(1,2,callback);
 })

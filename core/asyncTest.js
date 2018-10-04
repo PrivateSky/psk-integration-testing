@@ -1,4 +1,4 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
 var assert = require("double-check").assert;
 
 var f = $$.flow.describe("asyncExample", {
@@ -20,7 +20,7 @@ var f = $$.flow.describe("asyncExample", {
         assert.equal(this.result,3,"Results don't match");
         this.callback();
     }
-});
+})();
 
 assert.callback("AsyncStep",function (callback) {
     f.begin(1,2,callback);

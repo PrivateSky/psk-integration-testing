@@ -1,6 +1,6 @@
 var assert = require("double-check").assert;
 
-var f = $$.swarm.create("accessSwarm", {
+$$.swarm.describe("accessSwarm", {
     protected:{
         prot_count:"int"
     },

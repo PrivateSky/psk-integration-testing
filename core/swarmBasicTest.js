@@ -1,7 +1,9 @@
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
+require("callflow");
+require("launcher");
 var assert = require("double-check").assert;
 
-var f = $$.swarms.create("simpleSwarm", {
+var f = $$.swarms.describe("simpleSwarm", {
     type:"flow",       // flow, key, contract
     public:{
         a1:"int",
@@ -28,7 +30,7 @@ var f = $$.swarms.create("simpleSwarm", {
         //console.log("After Execution",res);
         this.callback();
     }
-});
+})();
 assert.callback("SwarmBasic test",function (callback) {
     f.begin(1,2,callback);
 })

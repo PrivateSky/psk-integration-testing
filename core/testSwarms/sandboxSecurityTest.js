@@ -1,4 +1,4 @@
-$$.swarm.create("testSandBoxSecurityExecution", {
+$$.swarm.describe("testSandBoxSecurityExecution", {
 	public: {
 		assert: 'object'
 	},

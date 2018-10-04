@@ -1,10 +1,10 @@
 var fs = require("fs");
-require("../../../engine/core").enableTesting();
+require("../../../builds/devel/pskruntime");
 
 var beesHealer = require("callflow").beesHealer;
 var assert = require("double-check").assert;
 
-var f = $$.swarms.create("simpleSwarm", {
+var f = $$.swarms.describe("simpleSwarm", {
     private:{
         a1:"int",
         a2:"int"
