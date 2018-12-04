@@ -11,6 +11,8 @@
     <script >
         $$.requireBundle("psknode");
         $$.requireBundle("pskclient");
+        require("callflow");
+        require("pskwallet").init();
     </script>
 
     <script src="csb-BrowserTest.js" type="module"  crossorigin ></script>
