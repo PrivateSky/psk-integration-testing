@@ -106,7 +106,7 @@ setTimeout(function () {
     is.startSwarm("createCsb", "start", "mastaleru").on({
         readPin: function (value) {
             console.log("Some value:", value);
-            let password = "123456789";
+            let password = "12345678";
             this.swarm("validatePin", password);
         },
     });
