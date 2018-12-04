@@ -1,3 +1,6 @@
+    require("callflow");
+    psknodeRequire("pskwallet");
+
     const textFile = "Some wonderful text that should be saved!Rafael";
     const filePath = "/local/temp.txt";
     const fs = require("fs");
@@ -96,6 +99,18 @@ setTimeout(function () {
     })
 
 }, 1);
+
+setTimeout(function () {
+
+    var is = require("interact").createInteractionSpace();
+    is.startSwarm("createCsb", "start", "mastaleru").on({
+        readPin: function (value) {
+            console.log("Some value:", value);
+            let password = "123456789";
+            this.swarm("validatePin", password);
+        },
+    });
+},2000);
 
 
 
