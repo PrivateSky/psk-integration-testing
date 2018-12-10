@@ -7,7 +7,9 @@
     let csbDefaultPin  = "12345678";
     let csbName = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
     let csbAlias = "masta";
-    var is = require("interact").createInteractionSpace();
+    var interact = require("interact");
+    interact.enableLocalInteractions();
+    var is = interact.createInteractionSpace();
 
     is.startSwarm("pskwallet.createCsb", "start", csbName).on({
         readPin: function (noTries, defaultPin, isMasterCsb) {
@@ -57,6 +59,7 @@
     }
 
     function extractFileFromCsb(url){
+        console.log("Extracting...");
         is.startSwarm("pskwallet.extract","start", url).on({
             readPin:function(noTries){
                 let pin = "12345678";
