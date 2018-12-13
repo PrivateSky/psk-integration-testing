@@ -1,7 +1,7 @@
 var fs = require("fs");
 require("../../../builds/devel/pskruntime");
 
-var beesHealer = require("foldermq").beesHealer;
+var beesHealer = require("swarmutils").beesHealer;
 var assert = require("double-check").assert;
 
 var f = $$.swarms.describe("simpleSwarm", {
