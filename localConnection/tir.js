@@ -83,6 +83,42 @@ const Tir = function () {
 
   const domainConfigs = {};
 
+  var rootFolder;
+
+  this.setup = function(domain, agents, swarmDescribes){
+      if(!rootFolder){
+        rootFolder = fs.mkdtemp(path.join(os.tmpdir(), ''));
+        pskdb.startDB(rootFolder);
+      }
+
+      let transaction = $$.blockchain.beginTransaction({});
+      let localDomain = transaction.lookup("DomainReference", domain);
+
+      localDomain.init("system", domain);
+      localDomain.setWorkspace(path.join(rootFolder, domain));
+
+      //we need to bundle swarmDescribes and after that store the path
+      localDomain.setConstitution(swarmDescribes);
+      localDomain.addLocalInterface("local", path.join(localDomain.getWorkspace(), "inputQueue"));
+
+      transaction.add(localDomain);
+      $$.blockchain.commit(transaction);
+
+      if(agents){
+        let domainBlockChain = pskdb.startDb(path.join(localDomain.getWorkspace(), "conf"));
+
+        for(let i=0; i<agents.length; i++){
+          let agentName = agents[i];
+
+          let trans = domainBlockChain.beginTransaction({});
+          let agent = trans.lookup("Agent", agentName);
+
+          trans.add(agent);
+          domainBlockChain.commit(trans);
+        }
+      }
+  }
+
   this.launch = (domain, agents, swarmDescribes, callable) => {
 
     const domainConfig = createSetup(domain, agents, swarmDescribes);
@@ -110,7 +146,7 @@ const Tir = function () {
     // TODO: do we need this?
     domainConfig.localDomain = localDomain;
 
-    domainConfig.testerNode = child_process.fork("./../../../engine/launcher", [domainConfig.workspace], {stdio:"inherit"});
+    domainConfig.testerNode = child_process.fork("./../../../engine/launcher", [domainConfig.workspace]/*rootFolder*/, {stdio:"inherit"});
 
     setTimeout(() => {
       // what we will be exposing on this callable?
