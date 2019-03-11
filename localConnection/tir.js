@@ -78,16 +78,15 @@ const Tir = function () {
    * Does not launch anything, just stores the configuration.
    */
   this.addDomain = (domain, agents, swarmDescribes) => {
-    let workspace = path.join(rootFolder, createKey(domain));
+    let workspace = path.join(rootFolder, 'nodes', createKey(domain));
     let domainConfig = {
       name: domain,
       agents,
       swarmDescribes,
       workspace: workspace,
-      inputQueue: path.join(workspace, 'inputQueue'),
       conf: path.join(workspace, 'conf'),
-      result: path.join(workspace, 'result'),
-      testerNode: null,
+      inbound: path.join(workspace, 'inbound'),
+      outbound: path.join(workspace, 'outbound'),
     };
     domainConfigs[domain] = domainConfig;
     return this;
@@ -98,8 +97,19 @@ const Tir = function () {
    * Launches all the configured domains.
    */
   this.launch = (callable) => {
-    pskdb.startDB(rootFolder);
 
+    if (testerNode !== null) {
+      throw new Error('Test node alredy launched!');
+      return;
+    }
+    console.info('[TIR] setting working folder root', rootFolder);
+
+    console.info('[TIR] pskdb on', path.join(rootFolder, 'conf'))
+    pskdb.startDB(path.join(rootFolder, 'conf'));
+
+    fs.mkdirSync(path.join(rootFolder, 'nodes'));
+
+    console.info('[TIR] start building nodes...');
     Object.keys(domainConfigs).forEach(name => {
       const domainConfig = domainConfigs[name];
       this.buildDomainConfiguration(domainConfig);
@@ -118,6 +128,9 @@ const Tir = function () {
    */
   this.buildDomainConfiguration = (domainConfig) => {
 
+    console.info('[TIR] domain ' + domainConfig.name + ' in workspace', domainConfig.workspace);
+    console.info('[TIR] domain ' + domainConfig.name + ' inbound', domainConfig.inbound);
+
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
     domain.init('system', domain);
@@ -125,14 +138,16 @@ const Tir = function () {
     fs.mkdirSync(domainConfig.workspace);
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(domainConfig.swarmDescribes);
-    domain.addLocalInterface('local', domainConfig.inputQueue);
+    domain.addLocalInterface('local', domainConfig.inbound);
     transaction.add(domain);
     $$.blockchain.commit(transaction);
 
     if (domainConfig.agents && Array.isArray(domainConfig.agents) && domainConfig.agents.length > 0) {
       let domainBlockChain = pskdb.createDBHandler(domainConfig.conf);
+      console.info('[TIR] domain ' + domainConfig.name + ' starting agents...');
 
       domainConfig.agents.forEach(agentName => {
+        console.info('[TIR] domain ' + domainConfig.name + ' agent', agentName);
         let trans = domainBlockChain.beginTransaction({});
         let agent = trans.lookup("Agent", agentName);
         trans.add(agent);
@@ -149,7 +164,8 @@ const Tir = function () {
     if (domainConfig === undefined) {
       throw new Error('Could not find domain ' + domain + ' in ' + Object.keys(domainConfigs).join(', '));
     } else {
-      return interact.createNodeInteractionSpace(agent, domainConfig.workspace, domainConfig.result);
+      console.info('[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on', domainConfig.outbound);
+      return interact.createNodeInteractionSpace(agent, domainConfig.conf, domainConfig.outbound);
     }
   };
 
@@ -164,7 +180,7 @@ const Tir = function () {
     }
     setTimeout(() => {
       console.info('[TIR] Removing temporary folder', rootFolder);
-      rmDeep(rootFolder);
+      // rmDeep(rootFolder);
       console.info('[TIR] Temporary folder removed', rootFolder);
       if (exitStatus !== undefined) {
         process.exit(exitStatus);

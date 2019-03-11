@@ -2,7 +2,7 @@ const tir = require('./tir');
 const assert = require('double-check').assert;
 
 const domain = 'local';
-const agents = ['example'];
+const agents = ['exampleAgent'];
 const swarm = '../builds/devel/domain.js';
 
 setTimeout(() => {
@@ -12,7 +12,7 @@ setTimeout(() => {
 assert.callback('Local connection testing', (finished) => {
   tir.addDomain(domain, agents, swarm).launch(() => {
     tir.interact('local', 'exampleAgent').startSwarm("echo", "say", "Hello").onReturn(result => {
-      // assert.equal("Echo Hello", result);
+      assert.equal("Echo Hello", result);
       tir.tearDown();
       finished();
       process.exit(0);
