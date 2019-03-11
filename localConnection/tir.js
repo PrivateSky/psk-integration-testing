@@ -68,9 +68,10 @@ const rmDeep = (folder) => {
 const Tir = function () {
 
   const domainConfigs = {};
-  const rootFolder = fs.mkdtempSync(path.join(os.tmpdir(), ''));
+  const rootFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'psk_'));
 
   let testerNode = null;
+
 
   /**
    * Adds a domain to the configuration, in a fluent way.
@@ -92,68 +93,36 @@ const Tir = function () {
     return this;
   };
 
+
   /**
    * Launches all the configured domains.
    */
   this.launch = (callable) => {
-    rmDeep(rootFolder);
-    fs.mkdtempSync(rootFolder);
     pskdb.startDB(rootFolder);
-
-    testerNode = child_process.fork("./../../../engine/launcher", [rootFolder], {stdio:"inherit"});
 
     Object.keys(domainConfigs).forEach(name => {
       const domainConfig = domainConfigs[name];
-      this.startDomain(domainConfig);
+      this.buildDomainConfiguration(domainConfig);
     });
+
+    testerNode = child_process.fork("./../../../engine/launcher", [rootFolder], {stdio:"inherit"});
 
     setTimeout(() => {
       callable();
     }, 10);
   };
 
-  // this.setup = function(domain, agents, swarmDescribes) {
-  //   if (!rootFolder) {
-  //     rootFolder = fs.mkdtemp(path.join(os.tmpdir(), ''));
-  //     pskdb.startDB(rootFolder);
-  //   }
-  //
-  //   let transaction = $$.blockchain.beginTransaction({});
-  //   let localDomain = transaction.lookup("DomainReference", domain);
-  //
-  //   localDomain.init("system", domain);
-  //   localDomain.setWorkspace(path.join(rootFolder, domain));
-  //
-  //   //we need to bundle swarmDescribes and after that store the path
-  //   localDomain.setConstitution(swarmDescribes);
-  //   localDomain.addLocalInterface("local", path.join(localDomain.getWorkspace(), "inputQueue"));
-  //
-  //   transaction.add(localDomain);
-  //   $$.blockchain.commit(transaction);
-  //
-  //   if (agents) {
-  //     let domainBlockChain = pskdb.startDb(path.join(localDomain.getWorkspace(), "conf"));
-  //
-  //     for (let i = 0; i < agents.length; i++) {
-  //       let agentName = agents[i];
-  //
-  //       let trans = domainBlockChain.beginTransaction({});
-  //       let agent = trans.lookup("Agent", agentName);
-  //
-  //       trans.add(agent);
-  //       domainBlockChain.commit(trans);
-  //     }
-  //   }
-  // };
 
   /**
-   * Starts a domain.
+   * Builds the config for a node.
    */
-  this.startDomain = (domainConfig) => {
+  this.buildDomainConfiguration = (domainConfig) => {
 
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
     domain.init('system', domain);
+
+    fs.mkdirSync(domainConfig.workspace);
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(domainConfig.swarmDescribes);
     domain.addLocalInterface('local', domainConfig.inputQueue);
@@ -161,8 +130,7 @@ const Tir = function () {
     $$.blockchain.commit(transaction);
 
     if (domainConfig.agents && Array.isArray(domainConfig.agents) && domainConfig.agents.length > 0) {
-      // Question: is this initialized regardless of agents presence?
-      let domainBlockChain = pskdb.startDB(domainConfig.conf);
+      let domainBlockChain = pskdb.createDBHandler(domainConfig.conf);
 
       domainConfig.agents.forEach(agentName => {
         let trans = domainBlockChain.beginTransaction({});
@@ -172,41 +140,6 @@ const Tir = function () {
       });
     }
   };
-
-  // this.launch = (domain, agents, swarmDescribes, callable) => {
-
-  //   const domainConfig = createSetup(domain, agents, swarmDescribes);
-
-  //   // cleanup the folders, maybe leftovers from a previously failed test
-  //   cleanup(domainConfig);
-
-  //   // save the reference
-  //   domainConfigs[domain] = domainConfig;
-
-  //   //enable blockchain
-	//   pskdb.startDB(domainConfig.workspace);
-
-  //   let transaction = $$.blockchain.beginTransaction({});
-  //   let localDomain = transaction.lookup("DomainReference", domainConfig.name);
-  //   // TODO: this is still local?
-  //   localDomain.init("system", "local");
-
-  //   localDomain.setWorkspace(domainConfig.workspace);
-  //   localDomain.setConstitution(domainConfig.swarmDescribes);
-  //   localDomain.addLocalInterface("local", domainConfig.queue);
-  //   transaction.add(localDomain);
-  //   $$.blockchain.commit(transaction);
-
-  //   // TODO: do we need this?
-  //   domainConfig.localDomain = localDomain;
-
-  //   domainConfig.testerNode = child_process.fork("./../../../engine/launcher", [domainConfig.workspace]/*rootFolder*/, {stdio:"inherit"});
-
-  //   setTimeout(() => {
-  //     // what we will be exposing on this callable?
-  //     callable();
-  //   }, 5);
-  // };
 
   /**
    * Interacts with an agent of a domain
