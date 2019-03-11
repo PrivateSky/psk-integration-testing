@@ -70,6 +70,12 @@ const Tir = function () {
   const domainConfigs = {};
   const rootFolder = fs.mkdtempSync(path.join(os.tmpdir(), ''));
 
+  let testerNode = null;
+
+  /**
+   * Adds a domain to the configuration, in a fluent way.
+   * Does not launch anything, just stores the configuration.
+   */
   this.addDomain = (domain, agents, swarmDescribes) => {
     let workspace = path.join(rootFolder, createKey(domain));
     let domainConfig = {
@@ -86,10 +92,15 @@ const Tir = function () {
     return this;
   };
 
+  /**
+   * Launches all the configured domains.
+   */
   this.launch = (callable) => {
     rmDeep(rootFolder);
     fs.mkdtempSync(rootFolder);
     pskdb.startDB(rootFolder);
+
+    testerNode = child_process.fork("./../../../engine/launcher", [rootFolder], {stdio:"inherit"});
 
     Object.keys(domainConfigs).forEach(name => {
       const domainConfig = domainConfigs[name];
@@ -98,7 +109,7 @@ const Tir = function () {
 
     setTimeout(() => {
       callable();
-    }, 50);
+    }, 10);
   };
 
   // this.setup = function(domain, agents, swarmDescribes) {
@@ -135,10 +146,10 @@ const Tir = function () {
   //   }
   // };
 
+  /**
+   * Starts a domain.
+   */
   this.startDomain = (domainConfig) => {
-    if (domainConfig.testerNode) {
-      return false;
-    }
 
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
@@ -151,7 +162,7 @@ const Tir = function () {
 
     if (domainConfig.agents && Array.isArray(domainConfig.agents) && domainConfig.agents.length > 0) {
       // Question: is this initialized regardless of agents presence?
-      let domainBlockChain = pskdb.startDb(domainConfig.conf);
+      let domainBlockChain = pskdb.startDB(domainConfig.conf);
 
       domainConfig.agents.forEach(agentName => {
         let trans = domainBlockChain.beginTransaction({});
@@ -159,11 +170,7 @@ const Tir = function () {
         trans.add(agent);
         domainBlockChain.commit(trans);
       });
-
     }
-
-    domainConfig.testerNode = child_process.fork("./../../../engine/launcher", [rootFolder], {stdio:"inherit"});
-    return true;
   };
 
   // this.launch = (domain, agents, swarmDescribes, callable) => {
@@ -201,6 +208,9 @@ const Tir = function () {
   //   }, 5);
   // };
 
+  /**
+   * Interacts with an agent of a domain
+   */
   this.interact = (domain, agent) => {
     const domainConfig = domainConfigs[domain];
     if (domainConfig === undefined) {
@@ -210,18 +220,23 @@ const Tir = function () {
     }
   };
 
+  /**
+   * Tears down all the nodes
+   */
   this.tearDown = (exitStatus) => {
-    Object.keys(domainConfigs).forEach(name => {
-      if (domainConfigs[name].testerNode) {
-        domainConfigs[name].testerNode.kill();
-      }
-    });
-
-    rmDeep(rootFolder);
-
-    if (exitStatus !== undefined) {
-      process.exit(exitStatus);
+    console.info('[TIR] Tearing down...');
+    if (testerNode) {
+      console.info('[TIR] Killing launcher',testerNode.pid);
+      testerNode.kill();
     }
+    setTimeout(() => {
+      console.info('[TIR] Removing temporary folder', rootFolder);
+      rmDeep(rootFolder);
+      console.info('[TIR] Temporary folder removed', rootFolder);
+      if (exitStatus !== undefined) {
+        process.exit(exitStatus);
+      }
+    }, 3000);
   };
 }
 
