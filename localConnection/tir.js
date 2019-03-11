@@ -104,8 +104,10 @@ const Tir = function () {
     }
     console.info('[TIR] setting working folder root', rootFolder);
 
-    console.info('[TIR] pskdb on', path.join(rootFolder, 'conf'))
-    pskdb.startDB(path.join(rootFolder, 'conf'));
+    const confFolder = path.join(rootFolder, 'conf');
+
+    console.info('[TIR] pskdb on', confFolder)
+    pskdb.startDB(confFolder);
 
     fs.mkdirSync(path.join(rootFolder, 'nodes'));
 
@@ -115,7 +117,7 @@ const Tir = function () {
       this.buildDomainConfiguration(domainConfig);
     });
 
-    testerNode = child_process.fork("./../../../engine/launcher", [rootFolder], {stdio:"inherit"});
+    testerNode = child_process.fork("./../../../engine/launcher", [confFolder], {stdio:"inherit"});
 
     setTimeout(() => {
       callable();
@@ -131,11 +133,11 @@ const Tir = function () {
     console.info('[TIR] domain ' + domainConfig.name + ' in workspace', domainConfig.workspace);
     console.info('[TIR] domain ' + domainConfig.name + ' inbound', domainConfig.inbound);
 
+    fs.mkdirSync(domainConfig.workspace);
+    
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
     domain.init('system', domain);
-
-    fs.mkdirSync(domainConfig.workspace);
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(domainConfig.swarmDescribes);
     domain.addLocalInterface('local', domainConfig.inbound);
@@ -165,7 +167,7 @@ const Tir = function () {
       throw new Error('Could not find domain ' + domain + ' in ' + Object.keys(domainConfigs).join(', '));
     } else {
       console.info('[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on', domainConfig.outbound);
-      return interact.createNodeInteractionSpace(agent, domainConfig.conf, domainConfig.outbound);
+      return interact.createNodeInteractionSpace(agent, domainConfig.inbound, domainConfig.outbound);
     }
   };
 
@@ -180,12 +182,12 @@ const Tir = function () {
     }
     setTimeout(() => {
       console.info('[TIR] Removing temporary folder', rootFolder);
-      // rmDeep(rootFolder);
+      rmDeep(rootFolder);
       console.info('[TIR] Temporary folder removed', rootFolder);
       if (exitStatus !== undefined) {
         process.exit(exitStatus);
       }
-    }, 3000);
+    }, 100);
   };
 }
 

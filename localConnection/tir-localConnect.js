@@ -13,9 +13,7 @@ assert.callback('Local connection testing', (finished) => {
   tir.addDomain(domain, agents, swarm).launch(() => {
     tir.interact('local', 'exampleAgent').startSwarm("echo", "say", "Hello").onReturn(result => {
       assert.equal("Echo Hello", result);
-      tir.tearDown();
       finished();
-      process.exit(0);
     });
   });
 }, 3500);
