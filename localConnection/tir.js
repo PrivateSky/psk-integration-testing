@@ -12,22 +12,32 @@ const tir = require('./tir');
 const assert = require('double-check').assert;
 
 const domain = 'local';
-const agents = [];
-const swarm = '../builds/devel/domain.js';
+const agents = ['exampleAgent'];
+
+const swarm = {
+  echo: {
+    say: function(input) {
+      this.return("Echo " + input);
+    }
+  },
+  notifier: {
+    init: function (encryptedSeed) {
+      this.encryptedSeed = encryptedSeed;
+    }
+  }
+};
+
 
 assert.callback('Local connection testing', (finished) => {
-
-  tir.launch(domain, agents, swarm, function() {
-
+  tir.addDomain(domain, agents, swarm).launch(5000, () => {
     tir.interact('local', 'exampleAgent').startSwarm("echo", "say", "Hello").onReturn(result => {
       assert.equal("Echo Hello", result);
       finished();
       tir.tearDown(0);
     });
-
   });
-
 }, 3500);
+
 
 */
 
@@ -65,6 +75,65 @@ const rmDeep = (folder) => {
   }
 };
 
+const createConstitution = (prefix, describer, options) => {
+  let opts = Object.assign({
+    nl: '\n',
+    semi: ';',
+    tab: '  '
+  }, options);
+
+  const file = path.join(prefix, 'constitution.js');
+  const contents = Object.keys(describer).reduce((c, name) => {
+    let line = '$$.swarms.describe(\'' + name + '\', {';
+    line += Object.keys(describer[name]).reduce((f, funcName) => {
+      f.push(opts.nl + opts.tab + funcName + ': ' + describer[name][funcName].toString());
+      return f;
+    }, []).join(',');
+    line += opts.nl + '})' + opts.semi;
+    c.push(line);
+    return c;
+  }, []).join(opts.nl);
+  fs.writeFileSync(file, contents);
+  return file;
+};
+
+const killPidTree = (pid) => {
+  if (process.platform === 'win32') {
+    child_process.execSync('taskkill /pid ' + pid + ' /T /F');
+    return [pid];
+  } else {
+    // linux and mac, defaults to linux
+    let tree = [pid];
+    let cmd = 'ps';
+    let args = ['-o', 'pid', '--no-headers', '--ppid'];
+    if (process.platform === 'darwin') {
+      // now we're talking, feel the power
+      cmd = 'pgrep';
+      args = ['-P'];
+    }
+    let pPid = pid;
+    while(pPid) {
+      // both mac and linux will have as last argument the PID
+      let cmdArgs = args.slice(0);
+      cmdArgs.push(pPid);
+      // Get the output in a sync way to simplify things
+      let output = child_process.spawnSync(cmd, cmdArgs);
+      // sometimes we have a \n at the end
+      pPid = ('' + output.stdout).trim();
+      // TODO: what if we have an error?
+      // TODO: How we can verify this process is ours?
+      //       One idea: the owner should be the same as the main process owner ???
+      //       Another idea: verify the command line if has something to do with our dir structure?
+
+      if (pPid) {
+        tree.push(pPid);
+      }
+    }
+    tree.reverse().forEach(pId => process.kill(pId));
+    return tree;
+  }
+};
+
 const Tir = function () {
 
   const domainConfigs = {};
@@ -76,13 +145,18 @@ const Tir = function () {
   /**
    * Adds a domain to the configuration, in a fluent way.
    * Does not launch anything, just stores the configuration.
+   * 
+   * @param string domain The name of the domain
+   * @param array agents The agents to be inserted
+   * @param object|string constitution The swarm describer, either as an object or as a string file path
+   * @returns this
    */
-  this.addDomain = (domain, agents, swarmDescribes) => {
+  this.addDomain = (domain, agents, constitution) => {
     let workspace = path.join(rootFolder, 'nodes', createKey(domain));
     let domainConfig = {
       name: domain,
       agents,
-      swarmDescribes,
+      constitution,
       workspace: workspace,
       conf: path.join(workspace, 'conf'),
       inbound: path.join(workspace, 'inbound'),
@@ -95,8 +169,16 @@ const Tir = function () {
 
   /**
    * Launches all the configured domains.
+   * 
+   * @param integer tearDownAfter The number of miliseconds the TIR will tear down, even if the test fails. If missing, you must call tearDown
+   * @param function callable The callback
    */
-  this.launch = (callable) => {
+  this.launch = (tearDownAfter, callable) => {
+
+    if (callable === undefined && tearDownAfter.call) {
+      callable = tearDownAfter;
+      tearDownAfter = null;
+    }
 
     if (testerNode !== null) {
       throw new Error('Test node alredy launched!');
@@ -117,16 +199,22 @@ const Tir = function () {
       this.buildDomainConfiguration(domainConfig);
     });
 
-    testerNode = child_process.fork("./../../../engine/launcher", [confFolder], {stdio:"inherit"});
+    testerNode = child_process.spawn("node", ["./../../../engine/launcher", confFolder], {stdio:"inherit"});
 
     setTimeout(() => {
+      if (tearDownAfter !== null) {
+        setTimeout(this.tearDown(1), tearDownAfter);
+      }
       callable();
+
     }, 10);
   };
 
 
   /**
    * Builds the config for a node.
+   * 
+   * @param object domainConfig The domain configuration stored by addDomain
    */
   this.buildDomainConfiguration = (domainConfig) => {
 
@@ -134,12 +222,17 @@ const Tir = function () {
     console.info('[TIR] domain ' + domainConfig.name + ' inbound', domainConfig.inbound);
 
     fs.mkdirSync(domainConfig.workspace);
-    
+
+    let constitutionFile = domainConfig.constitution;
+    if (typeof domainConfig.constitution !== 'string') {
+      constitutionFile = createConstitution(domainConfig.workspace, domainConfig.constitution);
+    }
+
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
     domain.init('system', domain);
     domain.setWorkspace(domainConfig.workspace);
-    domain.setConstitution(domainConfig.swarmDescribes);
+    domain.setConstitution(constitutionFile);
     domain.addLocalInterface('local', domainConfig.inbound);
     transaction.add(domain);
     $$.blockchain.commit(transaction);
@@ -159,7 +252,11 @@ const Tir = function () {
   };
 
   /**
-   * Interacts with an agent of a domain
+   * Interacts with an agent of a domain.
+   * 
+   * @param string domain The name of the domain
+   * @param string agent The name of the agent
+   * @returns swarm
    */
   this.interact = (domain, agent) => {
     const domainConfig = domainConfigs[domain];
@@ -173,12 +270,15 @@ const Tir = function () {
 
   /**
    * Tears down all the nodes
+   * 
+   * @param int exitStatus The exit status, to exit the process.
    */
   this.tearDown = (exitStatus) => {
     console.info('[TIR] Tearing down...');
     if (testerNode) {
-      console.info('[TIR] Killing launcher',testerNode.pid);
-      testerNode.kill();
+      const tree = killPidTree(testerNode.pid);
+      console.info('[TIR] Killed PIDs', tree.join(', '));
+      testerNode = null;
     }
     setTimeout(() => {
       console.info('[TIR] Removing temporary folder', rootFolder);
