@@ -203,7 +203,7 @@ const Tir = function () {
 
     setTimeout(() => {
       if (tearDownAfter !== null) {
-        setTimeout(this.tearDown(1), tearDownAfter);
+        setTimeout(() => this.tearDown(1), tearDownAfter);
       }
       callable();
 
