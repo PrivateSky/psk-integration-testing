@@ -1,18 +1,15 @@
-const tir = require('./tir');
+const tir = require('./tir.js');
 const assert = require('double-check').assert;
-
 const domain = 'local';
 const agents = ['exampleAgent'];
 
 const swarm = {
   echo: {
+    public: {
+      prefix: 'Echo'
+    },
     say: function(input) {
-      this.return("Echo " + input);
-    }
-  },
-  notifier: {
-    init: function (encryptedSeed) {
-      this.encryptedSeed = encryptedSeed;
+      this.return(this.prefix + ' ' + input);
     }
   }
 };
