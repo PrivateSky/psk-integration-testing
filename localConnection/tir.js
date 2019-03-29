@@ -43,6 +43,7 @@ assert.callback('Local connection testing', (finished) => {
 
 require("./../../../builds/devel/pskruntime.js");
 require('./../../../builds/devel/psknode');
+require('./../../../builds/devel/consoleTools');
 
 const os = require('os');
 const path = require('path');
@@ -85,8 +86,12 @@ const createConstitution = (prefix, describer, options) => {
   const file = path.join(prefix, 'constitution.js');
   const contents = Object.keys(describer).reduce((c, name) => {
     let line = '$$.swarms.describe(\'' + name + '\', {';
-    line += Object.keys(describer[name]).reduce((f, funcName) => {
-      f.push(opts.nl + opts.tab + funcName + ': ' + describer[name][funcName].toString());
+    line += Object.keys(describer[name]).reduce((f, prop) => {
+      if (typeof describer[name][prop] === 'object') {
+        f.push(opts.nl + opts.tab + prop + ': ' + JSON.stringify(describer[name][prop]));
+      } else {
+        f.push(opts.nl + opts.tab + prop + ': ' + describer[name][prop].toString());
+      }
       return f;
     }, []).join(',');
     line += opts.nl + '})' + opts.semi;
@@ -129,7 +134,17 @@ const killPidTree = (pid) => {
         tree.push(pPid);
       }
     }
-    tree.reverse().forEach(pId => process.kill(pId));
+    console.info('[TIR] Kill ' + tree.length + ' processes: ', tree);
+    tree.reverse().forEach(pId => {
+      try {
+        if (pId) {
+          console.info('[TIR] Kill process [' + pId + ']');
+          process.kill(pId);
+        }
+      } catch (err) {
+        console.info('[TIR] Error killing ' + pId, err.message);
+      }
+    });
     return tree;
   }
 };
@@ -181,7 +196,7 @@ const Tir = function () {
     }
 
     if (testerNode !== null) {
-      throw new Error('Test node alredy launched!');
+      throw new Error('Test node already launched!');
       return;
     }
     console.info('[TIR] setting working folder root', rootFolder);
