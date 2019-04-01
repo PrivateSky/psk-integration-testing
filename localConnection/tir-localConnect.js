@@ -1,4 +1,4 @@
-const tir = require('./tir.js');
+const tir = require('./../test-util/tir.js');
 const assert = require('double-check').assert;
 const domain = 'local';
 const agents = ['exampleAgent'];
@@ -9,7 +9,7 @@ const swarm = {
       prefix: 'Echo'
     },
     say: function(input) {
-      this.return(this.prefix + ' ' + input);
+      this.return('Echo ' + input);
     }
   }
 };

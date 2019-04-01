@@ -102,53 +102,6 @@ const createConstitution = (prefix, describer, options) => {
   return file;
 };
 
-const killPidTree = (pid) => {
-  if (process.platform === 'win32') {
-    child_process.execSync('taskkill /pid ' + pid + ' /T /F');
-    return [pid];
-  } else {
-    // linux and mac, defaults to linux
-    let tree = [pid];
-    let cmd = 'ps';
-    let args = ['-o', 'pid', '--no-headers', '--ppid'];
-    if (process.platform === 'darwin') {
-      // now we're talking, feel the power
-      cmd = 'pgrep';
-      args = ['-P'];
-    }
-    let pPid = pid;
-    while(pPid) {
-      // both mac and linux will have as last argument the PID
-      let cmdArgs = args.slice(0);
-      cmdArgs.push(pPid);
-      // Get the output in a sync way to simplify things
-      let output = child_process.spawnSync(cmd, cmdArgs);
-      // sometimes we have a \n at the end
-      pPid = ('' + output.stdout).trim();
-      // TODO: what if we have an error?
-      // TODO: How we can verify this process is ours?
-      //       One idea: the owner should be the same as the main process owner ???
-      //       Another idea: verify the command line if has something to do with our dir structure?
-
-      if (pPid) {
-        tree.push(pPid);
-      }
-    }
-    console.info('[TIR] Kill ' + tree.length + ' processes: ', tree);
-    tree.reverse().forEach(pId => {
-      try {
-        if (pId) {
-          console.info('[TIR] Kill process [' + pId + ']');
-          process.kill(pId);
-        }
-      } catch (err) {
-        console.info('[TIR] Error killing ' + pId, err.message);
-      }
-    });
-    return tree;
-  }
-};
-
 const Tir = function () {
 
   const domainConfigs = {};
@@ -291,8 +244,8 @@ const Tir = function () {
   this.tearDown = (exitStatus) => {
     console.info('[TIR] Tearing down...');
     if (testerNode) {
-      const tree = killPidTree(testerNode.pid);
-      console.info('[TIR] Killed PIDs', tree.join(', '));
+      console.info('[TIR] Killing node', testerNode.pid);
+      process.kill(testerNode.pid);
       testerNode = null;
     }
     setTimeout(() => {
