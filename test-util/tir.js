@@ -128,7 +128,7 @@ const Tir = function () {
       workspace: workspace,
       conf: path.join(workspace, 'conf'),
       inbound: path.join(workspace, 'inbound'),
-      outbound: path.join(workspace, 'outbound'),
+      outbound: path.join(workspace, 'outbound')
     };
     domainConfigs[domain] = domainConfig;
     return this;
@@ -198,7 +198,7 @@ const Tir = function () {
 
     let transaction = $$.blockchain.beginTransaction({});
     let domain = transaction.lookup('DomainReference', domainConfig.name);
-    domain.init('system', domain);
+    domain.init('system', domainConfig.name);
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(constitutionFile);
     domain.addLocalInterface('local', domainConfig.inbound);

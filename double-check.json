@@ -1,5 +1,5 @@
 {
   "confFileName": "double-check.json",
   "fileExt": ".js",
-  "ignore": ["testSwarms", "fakes"]
+  "ignore": ["testSwarms", "fakes", "test-util"]
 }
