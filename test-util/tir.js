@@ -231,8 +231,14 @@ const Tir = function () {
     if (domainConfig === undefined) {
       throw new Error('Could not find domain ' + domain + ' in ' + Object.keys(domainConfigs).join(', '));
     } else {
-      console.info('[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on', domainConfig.outbound);
-      return interact.createNodeInteractionSpace(agent, domainConfig.inbound, domainConfig.outbound);
+      var returnChannel = path.join(domainConfig.outbound, Math.random().toString(36).substr(2, 9));
+      try{
+        fs.mkdirSync(domainConfig.outbound);
+      }catch(err){
+        //dir allready exists
+      }
+      console.info('[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on', returnChannel);
+      return interact.createNodeInteractionSpace(agent, domainConfig.inbound, returnChannel);
     }
   };
 
