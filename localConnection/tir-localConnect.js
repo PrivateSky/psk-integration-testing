@@ -6,10 +6,10 @@ const agents = ['exampleAgent'];
 const swarm = {
   echo: {
     public: {
-      prefix: 'Echo'
+      prefix: { type: 'string', value: 'Echo' }
     },
     say: function(input) {
-      this.return('Echo ' + input);
+      this.return(this.prefix + ' ' + input);
     }
   }
 };
