@@ -4,7 +4,7 @@ var PDSFakes = [];
 
 var cfg = require("./simulationConfig").config;
 var pds = require("../../../../modules/pskdb/lib/InMemoryPDS");
-var cutil = require("../../../../modules/signsensus/lib/consUtil");
+// var cutil = require("../../../../modules/signsensus/lib/consUtil");
 var consensus = require("../../../../modules/signsensus/lib/consensusManager");
 
 
@@ -51,9 +51,9 @@ exports.init = function(config){
     }
     maxPulse = cfg.SIMULATION_TIMEOUT/cfg.PULSE_PERIODICITY + 1;
     for(var i = 0; i < cfg.MAX_NODES; i++){
-        var np = pds.newPDS(cfg.MAX_NODES);
+        var np = pds.newPDS(null);
         PDSFakes.push(np);
-        nodes.push(consensus.createConsensusManager("Node"+i, com, np , cfg.PULSE_PERIODICITY, cfg.MAX_NODES));
+        nodes.push(consensus.createConsensusManager("Node"+i, com, np , cfg.PULSE_PERIODICITY));
     }
 }
 

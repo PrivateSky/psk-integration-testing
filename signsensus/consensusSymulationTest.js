@@ -1,4 +1,6 @@
-const consensus = require("../../../modules/signsensus/lib/consensusManager");
+require("../../../builds/devel/pskruntime");
+require("../../../builds/devel/psknode");
+// const consensus = require("../../../modules/signsensus/lib/consensusManager");
 
 var cfg = require("./fakes/simulationConfig").config;
 var network = require("./fakes/comunicationFake");
