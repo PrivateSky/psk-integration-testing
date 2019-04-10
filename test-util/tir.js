@@ -167,7 +167,7 @@ const Tir = function () {
       this.buildDomainConfiguration(domainConfig);
     });
 
-    testerNode = child_process.spawn("node", ["./../../../engine/launcher", confFolder], {stdio:"inherit"});
+    testerNode = child_process.spawn("node", ["./../../../engine/launcher", confFolder, rootFolder], {stdio:"inherit"});
 
     setTimeout(() => {
       if (tearDownAfter !== null) {
