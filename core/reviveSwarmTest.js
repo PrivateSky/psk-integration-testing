@@ -20,7 +20,7 @@ var f = $$.swarms.describe("simpleSwarm", {
 });
 
 $$.ensureFolderExists("tmpSwarm", function(){
-	fs.writeFileSync("./tmpSwarm/swarm",JSON.stringify(beesHealer.asJSON(f.getInnerValue(),"begin",[1,2],function(err,res){
+	fs.writeFileSync("./tmpSwarm/swarm",JSON.stringify(beesHealer.asJSON(f().getInnerValue(),"begin",[1,2],function(err,res){
 			console.log("writing done!");
 			if(err){
 				console.error(err);

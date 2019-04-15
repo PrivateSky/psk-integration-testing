@@ -245,7 +245,7 @@ const Tir = function () {
   /**
    * Tears down all the nodes
    * 
-   * @param int exitStatus The exit status, to exit the process.
+   * @param exitStatus The exit status, to exit the process.
    */
   this.tearDown = (exitStatus) => {
     console.info('[TIR] Tearing down...');

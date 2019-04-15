@@ -1,25 +1,23 @@
+require("../../../../builds/devel/pskruntime");
+require("../../../../builds/devel/psknode");
 
-var ss = require("../../../../signsensus/signsensus/lib/sign");
+var ss = require("../../../../modules/pskcrypto/signsensusDS/sign");
 
-require("../../../engine/core").enableTesting();
 
 var safeBox = ss.getAgentSafeBox("testAgent");
 
+var test = $$.flow.describe("signatureTest", {
 
-
-
-var test = $$.flow.describe("signatureTest",{
-
-    start:function(){
+    start: function () {
         this.obj = {
-            name:"Hello World"
+            name: "Hello World"
         }
 
         this.digest = safeBox.digest(this.obj);
 
         safeBox.sign(this.digest, this.getSignature);
     },
-    getSignature:function(err,signature){
+    getSignature: function (err, signature) {
         this.signature = signature;
         console.log("Signature:", this.signature);
 
@@ -28,9 +26,9 @@ var test = $$.flow.describe("signatureTest",{
         safeBox.verify(this.digest, signature, this.printResults);
     },
 
-    printResults:function(err,isGood){
+    printResults: function (err, isGood) {
         //console.log(this.signature, isGood);
-        if(isGood){
+        if (isGood) {
             console.log("Success");
         } else {
             console.log("Fail to verify");

@@ -1,8 +1,12 @@
-var cfg = require("./../fakes/simulationConfig").config;
+require("../../../../builds/devel/pskruntime");
+require("../../../../builds/devel/psknode");
+
+// var cfg = require("../fakes/simulationConfig").config;
 var child_process = require('child_process');
-var cutil = require("../../../modules/signsensus/lib/consUtil");
+// var cutil = require("signsensus").consUtil;
+
 const os = require("os");
-require("../../../libraries/launcher/debugFacilitator").debugForks(true);
+require("../../../../libraries/launcher/debugFacilitator").debugForks(true);
 
 const maxParallelSimulations = os.cpus().length;
 
@@ -15,18 +19,29 @@ var configPossibilities = {
 	MAX_TRANSACTION_TIME: [50, 150, 200, 800, 1500],
 	NETWORK_DELAY: [500]
 };
+/*
+// VERIFY IF THIS TEST CAN SUCCEED: use 4 combinations only, instead of 1200 (as above)
+configPossibilities = {
+	MAX_NODES: [5, 10],
+	SIMULATION_TIMEOUT: [10000],
+	PULSE_PERIODICITY: [1000],
+	MAX_KEYS_COUNT: [100],
+	MAX_TRANSACTIONS: [100, 200],
+	MAX_TRANSACTION_TIME: [50],
+	NETWORK_DELAY: [500]
+};
+//*/
 
-var generatedCombinations = {};
-var generator = require("combos");
-generatedCombinations = generator(configPossibilities);
+const cartesianProduct = require("swarmutils").combos;
+var generatedCombinations = cartesianProduct(configPossibilities);
 console.log(generatedCombinations.length, "Combination generated");
 
 var inProgressSimulations = 0;
 var stats = {};
 
-function allSimulationFinished(){
-	return !inProgressSimulations && !generatedCombinations.length;
-}
+// function allSimulationFinished(){
+// 	return !inProgressSimulations && !generatedCombinations.length;
+// }
 
 function createSimulation(){
 

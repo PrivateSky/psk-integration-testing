@@ -1,4 +1,7 @@
-const payload = require("../../../../signsensus/signsensus/lib/ssutil");
+require("../../../../builds/devel/pskruntime");
+require("../../../../builds/devel/psknode");
+
+const payload = require("../../../../modules/pskcrypto/signsensusDS/ssutil");
 
 var str = "1c4a796577863ba5ea33b3034eb99e42e892567d7778158277d59ff0a99eba9c";
 console.log(str);

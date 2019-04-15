@@ -1,40 +1,38 @@
+require("../../../../builds/devel/pskruntime");
+require("../../../../builds/devel/psknode");
 
-var ss = require("../../../../signsensus/signsensus/lib/sign");
+var ss = require("../../../../modules/pskcrypto/signsensusDS/sign");
 
-require("../../../engine/core").enableTesting();
 
 var safeBox = ss.getAgentSafeBox("testAgent", 63);
 
+var test = $$.flow.describe("signatureTest", {
 
-
-
-var test = $$.flow.describe("signatureTest",{
-
-    start:function(){
+    start: function () {
         this.obj = {
-            name:"Hello World"
+            name: "Hello World"
         }
 
         this.digest = safeBox.digest(this.obj);
 
-        for(var i=0; i<10; i++){
+        for (var i = 0; i < 10; i++) {
             var t = process.hrtime();
 
             safeBox.sign(this.digest, this.getSignature);
 
             t = process.hrtime(t);
-            console.log('Signing + generating a new public key took %d seconds (or %d milliseconds)', t[0] + t[1]/1000000000, t[1]/ 1000000);
+            console.log('Signing + generating a new public key took %d seconds (or %d milliseconds)', t[0] + t[1] / 1000000000, t[1] / 1000000);
         }
     },
-    getSignature:function(err,signature){
+    getSignature: function (err, signature) {
         this.signature = signature;
         console.log("Signature:", this.signature);
-       safeBox.verify(this.digest, signature, this.printResults);
+        safeBox.verify(this.digest, signature, this.printResults);
     },
 
-    printResults:function(err,isGood){
+    printResults: function (err, isGood) {
         //console.log(this.signature, isGood);
-        if(isGood){
+        if (isGood) {
             console.log("Success");
         } else {
             console.log("Fail to verify");

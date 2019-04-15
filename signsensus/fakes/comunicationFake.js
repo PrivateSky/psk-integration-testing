@@ -1,71 +1,62 @@
-
-var nodes = [];
-var PDSFakes = [];
-
 var cfg = require("./simulationConfig").config;
-var pds = require("../../../../modules/pskdb/lib/InMemoryPDS");
-// var cutil = require("../../../../modules/signsensus/lib/consUtil");
-var consensus = require("../../../../modules/signsensus/lib/consensusManager");
+var newPDS = require("../../../../modules/pskdb/lib/InMemoryPDS").newPDS;
+var createConsensusManager = require("../../../../modules/signsensus/lib/consensusManager").createConsensusManager;
 
+var g_arrPDSAdapters = [];
+var g_arrConsensusManagers = [];
 
-var maxPulse;
+var g_maxPulse;                     // = cfg.SIMULATION_TIMEOUT/cfg.PULSE_PERIODICITY + 1 = 2000/300 + 1 = 7.666666666666667
+var g_totalGeneratedCounter = 0;    //for `swarm.swarmName` in `exports.generateRandomTransaction`
+var g_afterFinish = {};             //for statistics in `g_communicationOutlet.broadcastPulse`
 
-var afterFinish = {};
-
-var com = {
-    broadcastPulse: function(from, pulse){
-        nodes.forEach( function(n){
-                if(n.nodeName != from) {
-                    setTimeout(function(){
-                        n.recordPulse(from, pulse);
-                    }, getRandomInt(cfg.NETWORK_DELAY));
-                } else {
-                    if(pulse.currentPulse > 2 * maxPulse){
-                        afterFinish[from] = true;
-                    }
+function terminate() {
+    //process.send({pid: process.pid, stats: exports.computeStatistics()})
+    exports.dumpVSDs();
+    console.log("[STATISTICS]:", exports.computeStatistics());
+    process.exit();
+}
+var g_communicationOutlet = {                           //for `createConsensusManager` in `exports.init`
+    broadcastPulse: function (from, pulse) {
+        g_arrConsensusManagers.forEach(consensusManager => {
+            if (consensusManager.nodeName != from) {
+                setTimeout(function () {
+                    consensusManager.recordPulse(from, pulse);
+                }, getRandomInt(cfg.NETWORK_DELAY));
+            } else {
+                if (pulse.currentPulse > 2 * g_maxPulse) {
+                    g_afterFinish[from] = true;
                 }
+            }
         });
 
-
-        if(Object.keys(afterFinish).length >= cfg.MAX_NODES){
-            console.log(Object.keys(afterFinish).length , cfg.MAX_NODES);
+        if (Object.keys(g_afterFinish).length >= cfg.MAX_NODES) {
+            console.log("[AFTER FINISH]:", Object.keys(g_afterFinish).length, cfg.MAX_NODES);
             setTimeout(terminate, 1);
         }
     }
 }
 
-//network.generateRandomTransaction();
-function terminate(){
-	//process.send({pid: process.pid, stats: exports.exportStatistics()})
-    exports.dumpVSDs();
-    console.log(exports.exportStatistics())
-    process.exit();
-}
 
-
-
-exports.init = function(config){
-    if(config){
+exports.init = function (config) {
+    if (config) {
         console.log("default config overwritten");
         cfg = config;
     }
-    maxPulse = cfg.SIMULATION_TIMEOUT/cfg.PULSE_PERIODICITY + 1;
-    for(var i = 0; i < cfg.MAX_NODES; i++){
-        var np = pds.newPDS(null);
-        PDSFakes.push(np);
-        nodes.push(consensus.createConsensusManager("Node"+i, com, np , cfg.PULSE_PERIODICITY));
+    g_maxPulse = cfg.SIMULATION_TIMEOUT / cfg.PULSE_PERIODICITY + 1;
+    for (var i = 0; i < cfg.MAX_NODES; i++) {
+        var pdsAdapter = newPDS(null);          //new InMemoryPDS(permanentPersistence = null, shareHoldersCount = undefined)
+        g_arrPDSAdapters.push(pdsAdapter);
+        g_arrConsensusManagers.push(createConsensusManager("Node" + i, g_communicationOutlet, pdsAdapter, cfg.PULSE_PERIODICITY));
     }
 }
 
-
-toalGeneratedCounter = 0 ;
-exports.generateRandomTransaction = function() {
+exports.generateRandomTransaction = function () {
     var nodeNumber = getRandomInt(cfg.MAX_NODES);
-    var node = nodes[nodeNumber];
-    var pdsHanlder = PDSFakes[nodeNumber].getHandler();
+    var consensusManager = g_arrConsensusManagers[nodeNumber];
+    var pdsStorage = g_arrPDSAdapters[nodeNumber].getHandler();
 
     var swarm = {
-        swarmName: "Swarm:" + toalGeneratedCounter
+        swarmName: "Swarm:" + g_totalGeneratedCounter
     };
 
     var howMany = getRandomInt(cfg.MAX_KEYS_COUNT / 4) + 1;
@@ -76,45 +67,39 @@ exports.generateRandomTransaction = function() {
 
         if (dice == 0) {  //concurrency issues
             keyName = "sameKey";
-            pdsHanlder.writeKey(keyName, getRandomInt(10000));
+            pdsStorage.writeKey(keyName, getRandomInt(10000));
         }
 
         if (dice <= 4) {
-            pdsHanlder.readKey(keyName);
+            pdsStorage.readKey(keyName);
         } else {
-            pdsHanlder.writeKey(keyName, getRandomInt(10000));
+            pdsStorage.writeKey(keyName, getRandomInt(10000));
         }
     }
 
-    PDSFakes[nodeNumber].computeSwarmTransactionDiff(swarm, pdsHanlder);
-    node.createTransactionFromSwarm(swarm);
-    toalGeneratedCounter++;
+    g_arrPDSAdapters[nodeNumber].computeSwarmTransactionDiff(swarm, pdsStorage);
+    consensusManager.createTransactionFromSwarm(swarm);
+    g_totalGeneratedCounter++;
 }
 
-exports.dumpVSDs = function(){
-    nodes.forEach( node => node.dump());
+exports.dumpVSDs = function () {
+    g_arrConsensusManagers.forEach(item => item.dump());
 }
 
-exports.exportStatistics = function(){
+exports.computeStatistics = function () {
     var results = [];
-    nodes.forEach( node => {
-        results.push(node.exportStatistics());
-	});
+    g_arrConsensusManagers.forEach(item => results.push(item.exportStatistics()));
 
-    if(results.length<0){
+    if (results.length <= 0) {
         return {};
     }
 
     var stat = {};
     var indicators = Object.keys(results[0]);
-    for(var i=0; i<indicators.length; i++){
-        let ind = indicators[i];
-        let value = 0;
-        for(var j=0; j<nodes.length; j++){
-            var newValue = results[j][ind];
-            value += newValue;
-        }
-        stat[ind] = value/nodes.length;
+    for (var i = 0; i < indicators.length; i++) {
+        let indicator = indicators[i];
+        let sum = results.reduce((acc, item) => acc + item[indicator], 0);
+        stat[indicator] = sum / results.length; //arithmetic mean
     }
     return stat;
 }
