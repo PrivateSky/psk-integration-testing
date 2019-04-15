@@ -35,7 +35,7 @@ assert.callback('Basic stress test for FolderMQ vers. 2', (finished) => {
     var targetedResult = runs*1000+runs*runs*1;
     var result = 0;
 
-    tir.addDomain(domain, agents, swarm).launch(35000, () => {
+    tir.addDomain(domain, agents, swarm).launch(55000, () => {
         var callbacks = 0;
         for(let i=0; i<runs; i++){
             var ti = tir.interact(domain, getAgent());
@@ -59,4 +59,4 @@ assert.callback('Basic stress test for FolderMQ vers. 2', (finished) => {
           });
         }
     });
-}, 20000);
+}, 50000);
