@@ -1,19 +1,19 @@
+require("../../../../builds/devel/pskruntime");
+require("../../../../builds/devel/psknode");
+var assert = require('double-check').assert;
 
-var ss = require("../../../../signsensus/signsensus/lib/sign");
+var shModule = require("../../../../modules/pskcrypto/lib/utils/signatureHandler");
 
-require("../../../engine/core").enableTesting();
-
-var sh = ss.getAgentSignatureHandler("testAgent");
-var assert=require('double-check').assert;
-
+//??? Is `signatureHandler.js` abandoned?
+var sh = shModule.getAgentSignatureHandler("testAgent");
 
 var test = $$.flow.describe("signatureTest", {
-    public:{
+    public: {
         result: "int"
     },
     start: function (callback) {
-        this.result=0;
-        this.callback=callback;
+        this.result = 0;
+        this.callback = callback;
         this.obj = {
             name: "Hello World"
         }
@@ -32,13 +32,13 @@ var test = $$.flow.describe("signatureTest", {
 
     printResults: function (err, isGood) {
         this.result--;
-        assert.equal(err,null,"Error");
-        assert.equal(this.result,0,'Callback sequence does not match');
+        assert.equal(err, null, "Error");
+        assert.equal(this.result, 0, 'Callback sequence does not match');
         assert.equal(isGood, true, "Fail to verify signature");
         this.callback();
     }
 })
-assert.callback("Signsensus test",function(callback){
+assert.callback("Signsensus test", function (callback) {
     test().start(callback);
 });
 
