@@ -1,6 +1,11 @@
+require("../../../builds/devel/pskruntime");
+require("../../../builds/devel/psknode");
+
 var cfg = require("./simulationConfig").config;
 var newPDS = require("../../../../modules/pskdb/lib/InMemoryPDS").newPDS;
 var createConsensusManager = require("../../../../modules/signsensus/lib/consensusManager").createConsensusManager;
+
+const consUtil = require("signsensus").consUtil;
 
 var g_arrPDSAdapters = [];
 var g_arrConsensusManagers = [];
@@ -12,7 +17,7 @@ var g_afterFinish = {};             //for statistics in `g_communicationOutlet.b
 function terminate() {
     //process.send({pid: process.pid, stats: exports.computeStatistics()})
     exports.dumpVSDs();
-    console.log("[STATISTICS]:", exports.computeStatistics());
+    console.log("[STATISTICS (mean)]:", exports.computeStatistics());
     process.exit();
 }
 var g_communicationOutlet = {                           //for `createConsensusManager` in `exports.init`
@@ -23,7 +28,7 @@ var g_communicationOutlet = {                           //for `createConsensusMa
                     consensusManager.recordPulse(from, pulse);
                 }, getRandomInt(cfg.NETWORK_DELAY));
             } else {
-                if (pulse.currentPulse > 2 * g_maxPulse) {
+                if (pulse.currentPulse > 2 * g_maxPulse) {      /// ??? ??? ???
                     g_afterFinish[from] = true;
                 }
             }
@@ -42,11 +47,15 @@ exports.init = function (config) {
         console.log("default config overwritten");
         cfg = config;
     }
+
     g_maxPulse = cfg.SIMULATION_TIMEOUT / cfg.PULSE_PERIODICITY + 1;
+
+    var votingBox = consUtil.createDemocraticVotingBox(cfg.MAX_NODES);
+
     for (var i = 0; i < cfg.MAX_NODES; i++) {
-        var pdsAdapter = newPDS(null);          //new InMemoryPDS(permanentPersistence = null, shareHoldersCount = undefined)
+        var pdsAdapter = newPDS(null);          //new InMemoryPDS(permanentPersistence = null)
         g_arrPDSAdapters.push(pdsAdapter);
-        g_arrConsensusManagers.push(createConsensusManager("Node" + i, g_communicationOutlet, pdsAdapter, cfg.PULSE_PERIODICITY));
+        g_arrConsensusManagers.push(createConsensusManager("Node" + i, g_communicationOutlet, pdsAdapter, cfg.PULSE_PERIODICITY, votingBox));
     }
 }
 
