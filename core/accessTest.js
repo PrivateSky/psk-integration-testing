@@ -19,8 +19,9 @@ const swarms = {
             try {
                 this.prot_count += value;
             }catch(err){
-                console.log(err);
+                const assert = require("double-check").assert;
                 assert.notEqual(err,null,"Error expected");
+                this.return();
             }
         }
     }
