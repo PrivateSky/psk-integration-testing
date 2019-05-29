@@ -1,4 +1,4 @@
-const ecdsa = require("../../../modules/pskcrypto/ecdsa/lib/ECDSA").createECDSA('secp256k1');
+const ecdsa = require("../../../modules/pskcrypto/lib/ECDSA").createECDSA('secp256k1');
 
 var assert = require("../../../modules/double-check").assert;
 

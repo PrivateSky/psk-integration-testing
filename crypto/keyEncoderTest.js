@@ -1,4 +1,4 @@
-var KeyEncoder = require('../../../modules/pskcrypto/ecdsa/lib/keyEncoder');
+var KeyEncoder = require('../../../modules/pskcrypto/lib/keyEncoder');
 var ECPrivateKeyASN = KeyEncoder.ECPrivateKeyASN;
 var SubjectPublicKeyInfoASN = KeyEncoder.SubjectPublicKeyInfoASN;
 
