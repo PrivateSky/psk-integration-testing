@@ -255,12 +255,18 @@ const Tir = function () {
       testerNode = null;
     }
     setTimeout(() => {
-      console.info('[TIR] Removing temporary folder', rootFolder);
-      rmDeep(rootFolder);
-      console.info('[TIR] Temporary folder removed', rootFolder);
+      try{
+        console.info('[TIR] Removing temporary folder', rootFolder);
+        rmDeep(rootFolder);
+        console.info('[TIR] Temporary folder removed', rootFolder);
+      }catch (e) {
+        //just avoid to display error on console
+      }
+
       if (exitStatus !== undefined) {
         process.exit(exitStatus);
       }
+
     }, 100);
   };
 }
