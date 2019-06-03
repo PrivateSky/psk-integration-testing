@@ -202,8 +202,14 @@ const Tir = function () {
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(constitutionFile);
     domain.addLocalInterface('local', domainConfig.inbound);
-    transaction.add(domain);
-    $$.blockchain.commit(transaction);
+        console.log(">>DOMAIN<<", domainConfig.name, domain.localInterfaces);
+    try{
+      transaction.add(domain);
+      $$.blockchain.commit(transaction);
+    }catch(err){
+      console.log("Got an error", err);
+    }
+
 
     if (domainConfig.agents && Array.isArray(domainConfig.agents) && domainConfig.agents.length > 0) {
       let domainBlockChain = pskdb.createDBHandler(domainConfig.conf);

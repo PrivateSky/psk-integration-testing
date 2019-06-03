@@ -1,11 +1,8 @@
-const tir = require('./../test-util/tir.js');
+const tir = require('../test-util/tir.js');
 const assert = require('double-check').assert;
 const domain = 'superdomain';
-const noAgents = 10;
-var agents = [];
-for(var i=0; i<noAgents; i++){
-    agents.push("superAgent_"+Math.random().toString(36).substr(2, 9));
-}
+const agentName = "superAgent_"+Math.random().toString(36).substr(2, 9);
+const agents = [agentName];
 
 const swarm = {
   first: {
@@ -20,26 +17,16 @@ const swarm = {
   }
 };
 
-var index = 0;
-function getAgent(){
-    if(index >= noAgents){
-        index = 0;
-    }
-    const agent = agents[index];
-    index++;
-    return agent;
-}
-
-assert.callback('Basic stress test for FolderMQ vers. 2', (finished) => {
-    var runs = 1000;
+assert.callback('Basic stress test for FolderMQ', (finished) => {
+    var runs = 100;
     var targetedResult = runs*1000+runs*runs*1;
     var result = 0;
 
-    tir.addDomain(domain, agents, swarm).launch(550000, () => {
+    tir.addDomain(domain, agents, swarm).launch(25000, () => {
+        var ti = tir.interact(domain, agentName);
         var callbacks = 0;
-        for(let i=0; i<runs; i++){
-            var ti = tir.interact(domain, getAgent());
 
+        for(let i=0; i<runs; i++){
             ti.startSwarm("first", "phase").onReturn(firstSwarmRes => {
             result += firstSwarmRes;
 
@@ -47,9 +34,9 @@ assert.callback('Basic stress test for FolderMQ vers. 2', (finished) => {
                 ti.startSwarm("second", "phase").onReturn(secondSwarmRes => {
                     callbacks++;
                     result += secondSwarmRes;
-                    console.log(`Received <${callbacks}> swarm results from a total of <${runs*runs}>`);
+                    console.log(callbacks);
                     if(callbacks == runs*runs){
-                        console.log("Result", result, "Expected result", targetedResult);
+                        console.log("Result", result);
                         assert.equal(targetedResult, result, "Expected to get "+targetedResult);
                         finished();
                         tir.tearDown(0);
@@ -58,5 +45,6 @@ assert.callback('Basic stress test for FolderMQ vers. 2', (finished) => {
             }
           });
         }
+
     });
-}, 500000);
+}, 10000);
