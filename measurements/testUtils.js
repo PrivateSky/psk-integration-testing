@@ -1,4 +1,4 @@
-const tir = require('./../test-util/tir.js');
+const tir = require('../test-util/tir.js');
 const assert = require('double-check').assert;
 
 exports.intervalSize;
