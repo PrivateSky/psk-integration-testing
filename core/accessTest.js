@@ -1,7 +1,7 @@
 const tir = require('./../test-util/tir.js');
 const assert = require('double-check').assert;
 const domain = 'local';
-const agents = ['exampleAgent'];
+const agents = ['exampleAgent', 'agent'];
 
 const swarms = {
     simpleSwarm: {
@@ -16,17 +16,13 @@ const swarms = {
             this.swarm("agent", "doStep", 3);
         },
         doStep:function (value) {
-            try {
-                this.prot_count += value;
-            }catch(err){
-                const assert = require("double-check").assert;
-                assert.notEqual(err,null,"Error expected");
-                this.return();
-            }
+            const assert = require('double-check').assert;
+            this.prot_count += value; //undefined + number = NaN
+            assert.notEqual(this.prot_count, NaN, "Error expected");            
+            this.return(0);
         }
     }
 };
-
 
 assert.callback('Access test', (finished) => {
     tir.addDomain(domain, agents, swarms).launch(5000, () => {
