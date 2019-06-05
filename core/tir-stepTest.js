@@ -15,8 +15,8 @@ const swarm = {
             result:"int"
         },
         begin:function(a1,a2){
-            this.a1 = a1[0][0];
-            this.a2 = a1[0][1];
+            this.a1 = a1;
+            this.a2 = a2;
             console.log(a1);
             this.doStep(3);
             this.return(0);
