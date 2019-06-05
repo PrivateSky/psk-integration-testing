@@ -109,7 +109,7 @@ for (let i = 0; i < noOfDomains; i++) {
 }
 // ----------------- domand and agents setup ------------------------
 assert.callback(
-  `Swarmurile  din agentii a ${noOfDomains} domenii separate pot fi apelate.(numar incercari:${noOfInteractionsTested})`,
+  `Swarmurile  din agenti apartinand de domenii separate pot comunica inlantuit pentru a genera un rezultat .(numar incercari:${noOfInteractionsTested})`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
