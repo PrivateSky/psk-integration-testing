@@ -2,24 +2,51 @@ const tir = require('../test-util/tir.js');
 const assert = require('double-check').assert;
 const fs = require('fs');
 
+const args = process.argv.slice(2);
+
 const intervalSize = 6000;
-const noOfDomains = 10;
+const noOfDomains = args[0] || 2;
+const domainThrowingErrorIndex = args[1] || 300;
 const noOfAgentsPerDomain = 1;
+const noOfInteractionsTested = args[2] || noOfDomains;
 
 const domainNameBase = 'pskDomain';
 const agentNameBase = 'pskAgent';
 
 var deployedDomains = 0;
 const swarms = {
-  echo: {
-    say: function(input) {
-      console.log(`YELLL ${input}`);
-      this.return(Number(input) + 1);
+  commTest: {
+    default: function(input, domainConfig) {
+      console.log(`Default function`);
+      const path = require('path');
+      const interact = require('interact');
+      var returnChannel = path.join(
+        domainConfig.outbound,
+        Math.random()
+          .toString(36)
+          .substr(2, 9)
+      );
+      input += 1;
+      interact
+        .createNodeInteractionSpace('pskAgent_0', domainConfig.inbound, returnChannel)
+        .startSwarm('commTest', 'extension', input)
+        .onReturn(result => {
+          console.log(`FROM INTERACTION SPACEEEE ${result} `);
+          this.return(result);
+        });
+    },
+    extension: function(input) {
+      if (input == '#1') {
+        throw new Error('Intended error');
+      } else {
+        input += 1;
+        this.return(input);
+      }
     }
   }
 };
 
-// ----------------- domand and agents setup ------------------------
+// ----------------- domain and agents setup ------------------------
 
 function constructDomainName(sufix) {
   return `${domainNameBase}_${sufix}`;
@@ -57,32 +84,60 @@ for (let i = 0; i < noOfDomains; i++) {
 }
 // ----------------- domand and agents setup ------------------------
 assert.callback(
-  `Agentii pot comunica din domenii separate.`,
+  `Swarmurile  din agentii a ${noOfDomains} domenii separate pot fi apelate.(numar incercari:${noOfInteractionsTested})`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
+      var swarmCounter = 0;
+      function getResult() {
+        swarmCounter++;
+      }
 
       for (let d = 0; d < deployedDomains; d++) {
         setupInteractions(d, noOfAgentsPerDomain);
       }
-      for (let i = 0; i < deployedDomains - 1; i++) {
-        setTimeout(() => {
-          console.log(
-            `Test communication between pskAgents from pskDomain_${i} and pskDomain_${i + 1}`
+
+      setInterval(() => {
+        console.log(
+          `swarmcounter:${swarmCounter}  communicationsTested:${communicationsTested} noOfInteractionsTested:${noOfInteractionsTested}  noOfDomains:${noOfDomains}`
+        );
+
+        if (communicationsTested - 1 == noOfInteractionsTested) {
+          assert.true(
+            communicationsTested - 1 == noOfInteractionsTested,
+            `Nu toti agentii au comunicat`
           );
-          interactions[i][0].startSwarm('echo', 'say', 0).onReturn(result => {
-            interactions[i + 1][0].startSwarm('echo', 'say', result).onReturn(result1 => {
-              if (result1 == 2) {
+          finished();
+          tir.tearDown(0);
+        }
+      }, 500);
+      for (let i = 0; i <= noOfInteractionsTested; i++) {
+        let firstDomain = Math.floor(Math.random() * noOfDomains);
+        let secondDomain = Math.floor(Math.random() * noOfDomains);
+        while (firstDomain == secondDomain) {
+          secondDomain = Math.floor(Math.random() * noOfDomains);
+        }
+        let domainConfiguration = tir.getDomainConfig(`pskDomain_${secondDomain}`);
+        console.log(`Communication between pskDomain_${firstDomain} and pskDomain${secondDomain}`);
+        if (firstDomain == domainThrowingErrorIndex) {
+          interactions[firstDomain][0]
+            .startSwarm('commTest', 'default', '#', domainConfiguration)
+            .onReturn(result => {
+              getResult();
+              if (result == 2) {
                 communicationsTested += 1;
               }
-              if (i == deployedDomains - 2) {
-                assert.true(communicationsTested == noOfDomains - 1, `Agentii au comunicat!`);
-                finished();
-                tir.tearDown(0);
+            });
+        } else {
+          interactions[firstDomain][0]
+            .startSwarm('commTest', 'default', 0, domainConfiguration)
+            .onReturn(result => {
+              getResult();
+              if (result == 2) {
+                communicationsTested += 1;
               }
             });
-          });
-        }, 0);
+        }
       }
     });
   },
