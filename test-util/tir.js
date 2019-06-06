@@ -134,6 +134,7 @@ const Tir = function () {
     return this;
   };
 
+  this.createConstitution = createConstitution;
 
   /**
    * Launches all the configured domains.
