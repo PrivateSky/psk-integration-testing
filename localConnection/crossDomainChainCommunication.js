@@ -5,7 +5,7 @@ const fs = require('fs');
 const args = process.argv.slice(2);
 
 const intervalSize = 6000;
-const noOfDomains = args[0] || 2;
+const noOfDomains = args[0] || 3;
 const domainThrowingErrorIndex = args[1] || 300;
 const noOfAgentsPerDomain = 1;
 const noOfInteractionsTested = args[2] || noOfDomains;
@@ -16,8 +16,34 @@ const agentNameBase = 'pskAgent';
 var deployedDomains = 0;
 const swarms = {
   commTest: {
-    default: function(input, domainConfig) {
-      console.log(`Default function`);
+    do1: function(input, domain2Config, domain3Config) {
+      console.log(`Do1`);
+      if (input == '#') {
+        throw new Error('INTEDED ERROR');
+      } else {
+        const assert = require('double-check').assert;
+        const path = require('path');
+        const interact = require('interact');
+        var returnChannel = path.join(
+          domain2Config.outbound,
+          Math.random()
+            .toString(36)
+            .substr(2, 9)
+        );
+        input += 100;
+        interact
+          .createNodeInteractionSpace('pskAgent_0', domain2Config.inbound, returnChannel)
+          .startSwarm('commTest', 'do2', input, domain3Config)
+          .onReturn(result => {
+            assert.equal(input, 100, 'NOT RIGHT MATE');
+            console.log(`FROM INTERACTION SPACEEEE ${result} `);
+            this.return(result);
+          });
+      }
+    },
+    do2: function(input, domainConfig) {
+      console.log(`Do2`);
+      const assert = require('double-check').assert;
       const path = require('path');
       const interact = require('interact');
       var returnChannel = path.join(
@@ -26,22 +52,21 @@ const swarms = {
           .toString(36)
           .substr(2, 9)
       );
-      input += 1;
+      input += 10;
       interact
         .createNodeInteractionSpace('pskAgent_0', domainConfig.inbound, returnChannel)
-        .startSwarm('commTest', 'extension', input)
+        .startSwarm('commTest', 'do3', input)
         .onReturn(result => {
+          assert.equal(input, 110, 'NOT RIGHT MATE');
           console.log(`FROM INTERACTION SPACEEEE ${result} `);
           this.return(result);
         });
     },
-    extension: function(input) {
-      if (input == '#1') {
-        throw new Error('Intended error');
-      } else {
-        input += 1;
-        this.return(input);
-      }
+    do3: function(input) {
+      console.log(`Do3`);
+      input += 1;
+      console.log(`FINAL RESULTTTTTTTTTTTT: ${input}`);
+      this.return(input);
     }
   }
 };
@@ -84,7 +109,7 @@ for (let i = 0; i < noOfDomains; i++) {
 }
 // ----------------- domand and agents setup ------------------------
 assert.callback(
-  `Swarmurile  din agentii a ${noOfDomains} domenii separate pot fi apelate.(numar incercari:${noOfInteractionsTested})`,
+  `Swarmurile  din agenti apartinand de domenii separate pot comunica inlantuit pentru a genera un rezultat .(numar incercari:${noOfInteractionsTested})`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
@@ -114,26 +139,36 @@ assert.callback(
       for (let i = 0; i <= noOfInteractionsTested; i++) {
         let firstDomain = Math.floor(Math.random() * noOfDomains);
         let secondDomain = Math.floor(Math.random() * noOfDomains);
-        while (firstDomain == secondDomain) {
+        let thirdDomain = Math.floor(Math.random() * noOfDomains);
+        while (
+          firstDomain == secondDomain ||
+          secondDomain == thirdDomain ||
+          firstDomain == thirdDomain
+        ) {
+          firstDomain = Math.floor(Math.random() * noOfDomains);
           secondDomain = Math.floor(Math.random() * noOfDomains);
+          thirdDomain = Math.floor(Math.random() * noOfDomains);
         }
-        let domainConfiguration = tir.getDomainConfig(`pskDomain_${secondDomain}`);
-        console.log(`Communication between pskDomain_${firstDomain} and pskDomain${secondDomain}`);
+        let domain2Configuration = tir.getDomainConfig(`pskDomain_${secondDomain}`);
+        let domain3Configuration = tir.getDomainConfig(`pskDomain_${thirdDomain}`);
+        console.log(
+          `Communication between pskDomain_${firstDomain}, pskDomain_${secondDomain},pskDomain_${thirdDomain}`
+        );
         if (firstDomain == domainThrowingErrorIndex) {
           interactions[firstDomain][0]
-            .startSwarm('commTest', 'default', '#', domainConfiguration)
+            .startSwarm('commTest', 'do1', '#', domain2Configuration, domain3Configuration)
             .onReturn(result => {
               getResult();
-              if (result == 2) {
+              if (result == 111) {
                 communicationsTested += 1;
               }
             });
         } else {
           interactions[firstDomain][0]
-            .startSwarm('commTest', 'default', 0, domainConfiguration)
+            .startSwarm('commTest', 'do1', 0, domain2Configuration, domain3Configuration)
             .onReturn(result => {
               getResult();
-              if (result == 2) {
+              if (result == 111) {
                 communicationsTested += 1;
               }
             });

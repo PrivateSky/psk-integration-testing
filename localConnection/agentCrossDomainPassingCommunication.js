@@ -26,20 +26,29 @@ const swarms = {
           .toString(36)
           .substr(2, 9)
       );
-      input += 1;
-      interact
-        .createNodeInteractionSpace('pskAgent_0', domainConfig.inbound, returnChannel)
-        .startSwarm('commTest', 'extension', input)
-        .onReturn(result => {
-          console.log(`FROM INTERACTION SPACEEEE ${result} `);
+      const interaction = interact.createNodeInteractionSpace(
+        'pskAgent_0',
+        domainConfig.inbound,
+        returnChannel
+      );
+      input += 'PING';
+      interaction.startSwarm('commTest', 'extension', input).onReturn(result => {
+        console.log(`FROM INTERACTION SPACEEEE ${result} `);
+        result += 'PING';
+        if (result != 'PINGPONGPINGPONG') {
+          interaction.startSwarm('commTest', 'extension', result).onReturn(result1 => {
+            this.return(result1);
+          });
+        } else {
           this.return(result);
-        });
+        }
+      });
     },
     extension: function(input) {
-      if (input == '#1') {
+      if (input == '#PING') {
         throw new Error('Intended error');
       } else {
-        input += 1;
+        input += 'PONG';
         this.return(input);
       }
     }
@@ -84,7 +93,7 @@ for (let i = 0; i < noOfDomains; i++) {
 }
 // ----------------- domand and agents setup ------------------------
 assert.callback(
-  `Swarmurile  din agentii a ${noOfDomains} domenii separate pot fi apelate.(numar incercari:${noOfInteractionsTested})`,
+  `Doi agenti din domenii diferite pot interactiona in mod repetat.(numar incercari:${noOfInteractionsTested})`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
@@ -112,32 +121,16 @@ assert.callback(
         }
       }, 500);
       for (let i = 0; i <= noOfInteractionsTested; i++) {
-        let firstDomain = Math.floor(Math.random() * noOfDomains);
-        let secondDomain = Math.floor(Math.random() * noOfDomains);
-        while (firstDomain == secondDomain) {
-          secondDomain = Math.floor(Math.random() * noOfDomains);
-        }
-        let domainConfiguration = tir.getDomainConfig(`pskDomain_${secondDomain}`);
-        console.log(`Communication between pskDomain_${firstDomain} and pskDomain${secondDomain}`);
-        if (firstDomain == domainThrowingErrorIndex) {
-          interactions[firstDomain][0]
-            .startSwarm('commTest', 'default', '#', domainConfiguration)
-            .onReturn(result => {
-              getResult();
-              if (result == 2) {
-                communicationsTested += 1;
-              }
-            });
-        } else {
-          interactions[firstDomain][0]
-            .startSwarm('commTest', 'default', 0, domainConfiguration)
-            .onReturn(result => {
-              getResult();
-              if (result == 2) {
-                communicationsTested += 1;
-              }
-            });
-        }
+        let domainConfiguration = tir.getDomainConfig(`pskDomain_1`);
+        interactions[0][0]
+          .startSwarm('commTest', 'default', '', domainConfiguration)
+          .onReturn(result => {
+            getResult();
+            console.log(result);
+            if (result == 'PINGPONGPINGPONG') {
+              communicationsTested += 1;
+            }
+          });
       }
     });
   },
