@@ -16,7 +16,7 @@ const agentNameBase = 'pskAgent';
 var deployedDomains = 0;
 const swarms = {
   commTest: {
-    do1: function(input, domain2Config, domain3Config) {
+    do1: function(input, domain1Config, domain2Config, domain3Config) {
       console.log(`Do1`);
       if (input == '#') {
         throw new Error('INTEDED ERROR');
@@ -32,8 +32,8 @@ const swarms = {
         );
         input += 100;
         interact
-          .createNodeInteractionSpace('pskAgent_0', domain2Config.inbound, returnChannel)
-          .startSwarm('commTest', 'do2', input, domain3Config)
+          .createNodeInteractionSpace('pskAgent_1', domain2Config.inbound, returnChannel)
+          .startSwarm('commTest', 'do2', input, domain1Config, domain2Config, domain3Config)
           .onReturn(result => {
             assert.equal(input, 100, 'NOT RIGHT MATE');
             console.log(`FROM INTERACTION SPACEEEE ${result} `);
@@ -41,31 +41,50 @@ const swarms = {
           });
       }
     },
-    do2: function(input, domainConfig) {
+    do2: function(input, domain1Config, domain2Config, domain3Config) {
       console.log(`Do2`);
       const assert = require('double-check').assert;
       const path = require('path');
       const interact = require('interact');
       var returnChannel = path.join(
-        domainConfig.outbound,
+        domain2Config.outbound,
         Math.random()
           .toString(36)
           .substr(2, 9)
       );
       input += 10;
       interact
-        .createNodeInteractionSpace('pskAgent_0', domainConfig.inbound, returnChannel)
-        .startSwarm('commTest', 'do3', input)
+        .createNodeInteractionSpace('pskAgent_2', domain3Config.inbound, returnChannel)
+        .startSwarm('commTest', 'do3', input, domain1Config, domain2Config, domain3Config)
         .onReturn(result => {
           assert.equal(input, 110, 'NOT RIGHT MATE');
           console.log(`FROM INTERACTION SPACEEEE ${result} `);
           this.return(result);
         });
     },
-    do3: function(input) {
+    do3: function(input, domain1Config, domain2Config, domain3Config) {
       console.log(`Do3`);
       input += 1;
-      console.log(`FINAL RESULTTTTTTTTTTTT: ${input}`);
+      const assert = require('double-check').assert;
+      const path = require('path');
+      const interact = require('interact');
+      var returnChannel = path.join(
+        domain2Config.outbound,
+        Math.random()
+          .toString(36)
+          .substr(2, 9)
+      );
+      interact
+        .createNodeInteractionSpace('pskAgent_0', domain1Config.inbound, returnChannel)
+        .startSwarm('commTest', 'do4', input)
+        .onReturn(result => {
+          assert.equal(input, 111, 'NOT RIGHT MATE');
+          console.log(`FROM INTERACTION SPACEEEE ${result} `);
+          this.return(result);
+        });
+    },
+    do4: function(input) {
+      console.log('Do4');
       this.return(input);
     }
   }
@@ -109,7 +128,7 @@ for (let i = 0; i < noOfDomains; i++) {
 }
 // ----------------- domand and agents setup ------------------------
 assert.callback(
-  `Swarmurile  din agenti apartinand de domenii separate pot comunica inlantuit pentru a genera un rezultat .(numar incercari:${noOfInteractionsTested}, D0-D1-D2-D0)`,
+  `Swarmurile  din agenti apartinand de domenii separate pot comunica inlantuit pentru a genera un rezultat. D0-D1-D2-D1-D0->result)`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
@@ -149,6 +168,7 @@ assert.callback(
           secondDomain = Math.floor(Math.random() * noOfDomains);
           thirdDomain = Math.floor(Math.random() * noOfDomains);
         }
+        let domain1Configuration = tir.getDomainConfig(`pskDomain_${firstDomain}`);
         let domain2Configuration = tir.getDomainConfig(`pskDomain_${secondDomain}`);
         let domain3Configuration = tir.getDomainConfig(`pskDomain_${thirdDomain}`);
         console.log(
@@ -156,7 +176,14 @@ assert.callback(
         );
         if (firstDomain == domainThrowingErrorIndex) {
           interactions[firstDomain][0]
-            .startSwarm('commTest', 'do1', '#', domain2Configuration, domain3Configuration)
+            .startSwarm(
+              'commTest',
+              'do1',
+              '#',
+              domain1Configuration,
+              domain2Configuration,
+              domain3Configuration
+            )
             .onReturn(result => {
               getResult();
               if (result == 111) {
@@ -165,7 +192,14 @@ assert.callback(
             });
         } else {
           interactions[firstDomain][0]
-            .startSwarm('commTest', 'do1', 0, domain2Configuration, domain3Configuration)
+            .startSwarm(
+              'commTest',
+              'do1',
+              0,
+              domain1Configuration,
+              domain2Configuration,
+              domain3Configuration
+            )
             .onReturn(result => {
               getResult();
               if (result == 111) {

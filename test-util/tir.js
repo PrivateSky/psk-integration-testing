@@ -41,7 +41,7 @@ assert.callback('Local connection testing', (finished) => {
 
 */
 
-require("./../../../builds/devel/pskruntime.js");
+require('./../../../builds/devel/pskruntime.js');
 require('./../../../builds/devel/psknode');
 require('./../../../builds/devel/consoleTools');
 
@@ -50,21 +50,25 @@ const path = require('path');
 const fs = require('fs');
 const interact = require('interact');
 
-const child_process = require("child_process");
+const child_process = require('child_process');
 const pskdb = require('pskdb');
 
-const createKey = function (name) {
-  let parsed = ('' + name);
+const createKey = function(name) {
+  let parsed = '' + name;
   parsed.replace(/^[A-Za-z0-9 ]+/g, ' ');
   return parsed
     .split(' ')
-    .map((word, idx) => idx === 0 ? word.toLocaleLowerCase() : word.substr(0, 1).toLocaleUpperCase() + word.toLowerCase().substr(1))
+    .map((word, idx) =>
+      idx === 0
+        ? word.toLocaleLowerCase()
+        : word.substr(0, 1).toLocaleUpperCase() + word.toLowerCase().substr(1)
+    )
     .join('');
 };
 
-const rmDeep = (folder) => {
+const rmDeep = folder => {
   if (fs.existsSync(folder)) {
-    fs.readdirSync(folder).forEach((file) => {
+    fs.readdirSync(folder).forEach(file => {
       const curPath = path.join(folder, file);
       if (fs.lstatSync(curPath).isDirectory()) {
         rmDeep(curPath);
@@ -77,43 +81,48 @@ const rmDeep = (folder) => {
 };
 
 const createConstitution = (prefix, describer, options) => {
-  let opts = Object.assign({
-    nl: '\n',
-    semi: ';',
-    tab: '  '
-  }, options);
+  let opts = Object.assign(
+    {
+      nl: '\n',
+      semi: ';',
+      tab: '  '
+    },
+    options
+  );
 
   const file = path.join(prefix, 'constitution.js');
-  const contents = Object.keys(describer).reduce((c, name) => {
-    let line = '$$.swarms.describe(\'' + name + '\', {';
-    line += Object.keys(describer[name]).reduce((f, prop) => {
-      if (typeof describer[name][prop] === 'object') {
-        f.push(opts.nl + opts.tab + prop + ': ' + JSON.stringify(describer[name][prop]));
-      } else {
-        f.push(opts.nl + opts.tab + prop + ': ' + describer[name][prop].toString());
-      }
-      return f;
-    }, []).join(',');
-    line += opts.nl + '})' + opts.semi;
-    c.push(line);
-    return c;
-  }, []).join(opts.nl);
+  const contents = Object.keys(describer)
+    .reduce((c, name) => {
+      let line = "$$.swarms.describe('" + name + "', {";
+      line += Object.keys(describer[name])
+        .reduce((f, prop) => {
+          if (typeof describer[name][prop] === 'object') {
+            f.push(opts.nl + opts.tab + prop + ': ' + JSON.stringify(describer[name][prop]));
+          } else {
+            f.push(opts.nl + opts.tab + prop + ': ' + describer[name][prop].toString());
+          }
+          return f;
+        }, [])
+        .join(',');
+      line += opts.nl + '})' + opts.semi;
+      c.push(line);
+      return c;
+    }, [])
+    .join(opts.nl);
   fs.writeFileSync(file, contents);
   return file;
 };
 
-const Tir = function () {
-
+const Tir = function() {
   const domainConfigs = {};
   const rootFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'psk_'));
 
   let testerNode = null;
 
-
   /**
    * Adds a domain to the configuration, in a fluent way.
    * Does not launch anything, just stores the configuration.
-   * 
+   *
    * @param string domain The name of the domain
    * @param array agents The agents to be inserted
    * @param object|string constitution The swarm describer, either as an object or as a string file path
@@ -138,12 +147,11 @@ const Tir = function () {
 
   /**
    * Launches all the configured domains.
-   * 
+   *
    * @param integer tearDownAfter The number of miliseconds the TIR will tear down, even if the test fails. If missing, you must call tearDown
    * @param function callable The callback
    */
   this.launch = (tearDownAfter, callable) => {
-
     if (callable === undefined && tearDownAfter.call) {
       callable = tearDownAfter;
       tearDownAfter = null;
@@ -157,7 +165,7 @@ const Tir = function () {
 
     const confFolder = path.join(rootFolder, 'conf');
 
-    console.info('[TIR] pskdb on', confFolder)
+    console.info('[TIR] pskdb on', confFolder);
     pskdb.startDB(confFolder);
 
     fs.mkdirSync(path.join(rootFolder, 'nodes'));
@@ -168,25 +176,26 @@ const Tir = function () {
       this.buildDomainConfiguration(domainConfig);
     });
 
-    testerNode = child_process.spawn("node", ["./../../../engine/launcher", confFolder, rootFolder], {stdio:"inherit"});
+    testerNode = child_process.spawn(
+      'node',
+      ['./../../../engine/launcher', confFolder, rootFolder],
+      { stdio: 'inherit' }
+    );
 
     setTimeout(() => {
       if (tearDownAfter !== null) {
         setTimeout(() => this.tearDown(1), tearDownAfter);
       }
       callable();
-
     }, 10);
   };
 
-
   /**
    * Builds the config for a node.
-   * 
+   *
    * @param object domainConfig The domain configuration stored by addDomain
    */
-  this.buildDomainConfiguration = (domainConfig) => {
-
+  this.buildDomainConfiguration = domainConfig => {
     console.info('[TIR] domain ' + domainConfig.name + ' in workspace', domainConfig.workspace);
     console.info('[TIR] domain ' + domainConfig.name + ' inbound', domainConfig.inbound);
 
@@ -203,32 +212,37 @@ const Tir = function () {
     domain.setWorkspace(domainConfig.workspace);
     domain.setConstitution(constitutionFile);
     domain.addLocalInterface('local', domainConfig.inbound);
-        console.log(">>DOMAIN<<", domainConfig.name, domain.localInterfaces);
-    try{
+    console.log('>>DOMAIN<<', domainConfig.name, domain.localInterfaces);
+    try {
       transaction.add(domain);
       $$.blockchain.commit(transaction);
-    }catch(err){
-      console.log("Got an error", err);
+    } catch (err) {
+      console.log('Got an error', err);
     }
 
-
-    if (domainConfig.agents && Array.isArray(domainConfig.agents) && domainConfig.agents.length > 0) {
+    if (
+      domainConfig.agents &&
+      Array.isArray(domainConfig.agents) &&
+      domainConfig.agents.length > 0
+    ) {
       let domainBlockChain = pskdb.createDBHandler(domainConfig.conf);
       console.info('[TIR] domain ' + domainConfig.name + ' starting agents...');
 
       domainConfig.agents.forEach(agentName => {
         console.info('[TIR] domain ' + domainConfig.name + ' agent', agentName);
         let trans = domainBlockChain.beginTransaction({});
-        let agent = trans.lookup("Agent", agentName);
+        let agent = trans.lookup('Agent', agentName);
         trans.add(agent);
         domainBlockChain.commit(trans);
       });
     }
   };
-
+  this.getDomainConfig = domainName => {
+    return domainConfigs[domainName];
+  };
   /**
    * Interacts with an agent of a domain.
-   * 
+   *
    * @param string domain The name of the domain
    * @param string agent The name of the agent
    * @returns swarm
@@ -236,25 +250,35 @@ const Tir = function () {
   this.interact = (domain, agent) => {
     const domainConfig = domainConfigs[domain];
     if (domainConfig === undefined) {
-      throw new Error('Could not find domain ' + domain + ' in ' + Object.keys(domainConfigs).join(', '));
+      throw new Error(
+        'Could not find domain ' + domain + ' in ' + Object.keys(domainConfigs).join(', ')
+      );
     } else {
-      var returnChannel = path.join(domainConfig.outbound, Math.random().toString(36).substr(2, 9));
-      try{
+      var returnChannel = path.join(
+        domainConfig.outbound,
+        Math.random()
+          .toString(36)
+          .substr(2, 9)
+      );
+      try {
         fs.mkdirSync(domainConfig.outbound);
-      }catch(err){
+      } catch (err) {
         //dir allready exists
       }
-      console.info('[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on', returnChannel);
+      console.info(
+        '[TIR] Interacting with ' + domainConfig.name + '/' + agent + ' on',
+        returnChannel
+      );
       return interact.createNodeInteractionSpace(agent, domainConfig.inbound, returnChannel);
     }
   };
 
   /**
    * Tears down all the nodes
-   * 
+   *
    * @param exitStatus The exit status, to exit the process.
    */
-  this.tearDown = (exitStatus) => {
+  this.tearDown = exitStatus => {
     console.info('[TIR] Tearing down...');
     if (testerNode) {
       console.info('[TIR] Killing node', testerNode.pid);
@@ -262,20 +286,19 @@ const Tir = function () {
       testerNode = null;
     }
     setTimeout(() => {
-      try{
+      try {
         console.info('[TIR] Removing temporary folder', rootFolder);
         rmDeep(rootFolder);
         console.info('[TIR] Temporary folder removed', rootFolder);
-      }catch (e) {
+      } catch (e) {
         //just avoid to display error on console
       }
 
       if (exitStatus !== undefined) {
         process.exit(exitStatus);
       }
-
     }, 100);
   };
-}
+};
 
 module.exports = new Tir();
