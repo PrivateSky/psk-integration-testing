@@ -1,6 +1,6 @@
 const tir = require('../test-util/tir.js');
 const assert = require('double-check').assert;
-const fs = require('fs');
+const utils = require('./testUtils');
 
 const args = process.argv.slice(2);
 
@@ -10,10 +10,6 @@ const domainThrowingErrorIndex = args[1] || 300;
 const noOfAgentsPerDomain = 1;
 const noOfInteractionsTested = args[2] || noOfDomains;
 
-const domainNameBase = 'pskDomain';
-const agentNameBase = 'pskAgent';
-
-var deployedDomains = 0;
 const swarms = {
   commTest: {
     default: function(input, domainConfig) {
@@ -46,43 +42,9 @@ const swarms = {
   }
 };
 
-// ----------------- domain and agents setup ------------------------
+utils.initData(intervalSize, noOfDomains, noOfAgentsPerDomain, swarms);
+var interactions = utils.interactions;
 
-function constructDomainName(sufix) {
-  return `${domainNameBase}_${sufix}`;
-}
-
-function constructAgentName(sufix) {
-  return `${agentNameBase}_${sufix}`;
-}
-
-function setupDomain(noOfAgents) {
-  var agents = [];
-  interactions[deployedDomains] = [];
-
-  while (noOfAgents > 0) {
-    noOfAgents--;
-    agents.push(constructAgentName(agents.length));
-  }
-
-  tir.addDomain(constructDomainName(deployedDomains), agents, swarms);
-  deployedDomains++;
-}
-
-function setupInteractions(domainIndex, noOfAgents) {
-  for (let i = 0; i < noOfAgents; i++) {
-    interactions[domainIndex].push(
-      tir.interact(constructDomainName(domainIndex), constructAgentName(i))
-    );
-  }
-}
-
-let interactions = {};
-
-for (let i = 0; i < noOfDomains; i++) {
-  setupDomain(noOfAgentsPerDomain);
-}
-// ----------------- domand and agents setup ------------------------
 assert.callback(
   `Swarmurile  din agentii a ${noOfDomains} domenii separate pot fi apelate.(numar incercari:${noOfInteractionsTested})`,
   finished => {
@@ -93,10 +55,9 @@ assert.callback(
         swarmCounter++;
       }
 
-      for (let d = 0; d < deployedDomains; d++) {
-        setupInteractions(d, noOfAgentsPerDomain);
+      for (let d = 0; d < utils.deployedDomains; d++) {
+        utils.setupInteractions(d, noOfAgentsPerDomain);
       }
-
       setInterval(() => {
         console.log(
           `swarmcounter:${swarmCounter}  communicationsTested:${communicationsTested} noOfInteractionsTested:${noOfInteractionsTested}  noOfDomains:${noOfDomains}`

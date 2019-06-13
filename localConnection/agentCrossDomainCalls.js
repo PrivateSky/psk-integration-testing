@@ -1,6 +1,6 @@
 const tir = require('../test-util/tir.js');
 const assert = require('double-check').assert;
-const fs = require('fs');
+const utils = require('./testUtils');
 
 const args = process.argv.slice(2);
 
@@ -9,10 +9,6 @@ const noOfDomains = args[0] || 10;
 const domainThrowingErrorIndex = args[1] || 300;
 const noOfAgentsPerDomain = 1;
 
-const domainNameBase = 'pskDomain';
-const agentNameBase = 'pskAgent';
-
-var deployedDomains = 0;
 const swarms = {
   echo: {
     say: function(input) {
@@ -28,45 +24,11 @@ const swarms = {
   }
 };
 
-// ----------------- domand and agents setup ------------------------
+utils.initData(intervalSize, noOfDomains, noOfAgentsPerDomain, swarms);
+var interactions = utils.interactions;
 
-function constructDomainName(sufix) {
-  return `${domainNameBase}_${sufix}`;
-}
-
-function constructAgentName(sufix) {
-  return `${agentNameBase}_${sufix}`;
-}
-
-function setupDomain(noOfAgents) {
-  var agents = [];
-  interactions[deployedDomains] = [];
-
-  while (noOfAgents > 0) {
-    noOfAgents--;
-    agents.push(constructAgentName(agents.length));
-  }
-
-  tir.addDomain(constructDomainName(deployedDomains), agents, swarms);
-  deployedDomains++;
-}
-
-function setupInteractions(domainIndex, noOfAgents) {
-  for (let i = 0; i < noOfAgents; i++) {
-    interactions[domainIndex].push(
-      tir.interact(constructDomainName(domainIndex), constructAgentName(i))
-    );
-  }
-}
-
-let interactions = {};
-
-for (let i = 0; i < noOfDomains; i++) {
-  setupDomain(noOfAgentsPerDomain);
-}
-// ----------------- domain and agents setup ------------------------
 assert.callback(
-  `Swarmurile  din ${noOfDomains} domenii separate pot fi apelati.`,
+  `Swarmurile  agentilor din ${noOfDomains} domenii separate pot fi apelate.`,
   finished => {
     tir.launch(intervalSize + intervalSize * 0.3, () => {
       var communicationsTested = 0;
@@ -74,25 +36,22 @@ assert.callback(
       function getResult() {
         swarmCounter++;
       }
-
-      for (let d = 0; d < deployedDomains; d++) {
-        setupInteractions(d, noOfAgentsPerDomain);
-      }
       setInterval(() => {
-        console.log(
-          `swarmcounter:${swarmCounter}  communicationsTested:${communicationsTested}  noOfDomains:${noOfDomains}`
-        );
-
         if (communicationsTested == noOfDomains - 1) {
           assert.true(communicationsTested == noOfDomains - 1, `Nu toti agentii au comunicat`);
           finished();
           tir.tearDown(0);
         }
       }, 500);
-      for (let i = 0; i < deployedDomains - 1; i++) {
+      for (let d = 0; d < utils.deployedDomains; d++) {
+        utils.setupInteractions(d, utils.noOfAgentsPerDomain);
+      }
+      console.log(`DEPLOYEDDOMAINS:${utils.deployedDomains}`);
+      for (let i = 0; i < utils.deployedDomains - 1; i++) {
         console.log(
           `Test communication between pskAgents from pskDomain_${i} and pskDomain_${i + 1}`
         );
+
         interactions[i][0].startSwarm('echo', 'say', 0).onReturn(result => {
           getResult();
           if (i + 1 == domainThrowingErrorIndex) {
