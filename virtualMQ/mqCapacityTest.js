@@ -9,7 +9,7 @@ require("../../../builds/devel/pskruntime");
 require("../../../builds/devel/virtualMQ");
 require("../../../builds/devel/psknode");
 
-const utils = require("../../psk-unit-testing/Utils/fileUtils");
+const utils = require("../../psk-unit-testing/Utils/virtualMQUtils");
 const assert = require("double-check").assert;
 const VirtualMQ = require('../../../modules/virtualmq');
 const CHANNEL_NAME = Buffer.from('testChannel').toString('base64');
