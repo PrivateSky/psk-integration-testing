@@ -11,7 +11,7 @@ require("../../../builds/devel/psknode");
 
 const utils = require("../../psk-unit-testing/Utils/virtualMQUtils");
 const assert = require("double-check").assert;
-const VirtualMQ = require('../../../modules/virtualmq');
+const VirtualMQ = require('virtualmq');
 const CHANNEL_NAME = Buffer.from('testChannel').toString('base64');
 const fs = require("fs");
 const http = require("http");
