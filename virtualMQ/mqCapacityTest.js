@@ -7,6 +7,7 @@
 const utils = require("../../psk-unit-testing/Utils/virtualMQUtils");
 const assert = require("double-check").assert;
 const http = require("http");
+
 const args = process.argv.slice(2);
 var maxQueueCapacity = args[0] || 0;
 var waitStrutureTimeout = 5000;
@@ -34,7 +35,6 @@ function getDefaultMQCapacity(msg, finish) {
         });
         res.on('end', () => {
             maxQueueCapacity = res.headers['x-ratelimit-limit'];
-            var postRequestsArr = [];
             let messages = [];
 
             //prepare bulk of requests
