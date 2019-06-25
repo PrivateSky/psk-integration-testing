@@ -4,76 +4,27 @@
 * arg2 - amount of time to post messages
 * */
 
-
-require("../../../builds/devel/pskruntime");
-require("../../../builds/devel/virtualMQ");
-require("../../../builds/devel/psknode");
-
-const utils = require("../../psk-unit-testing/Utils/fileUtils");
+const utils = require("../../psk-unit-testing/Utils/virtualMQUtils");
 const assert = require("double-check").assert;
-const VirtualMQ = require('../../../modules/virtualmq');
-const CHANNEL_NAME = Buffer.from('testChannel').toString('base64');
-const fs = require("fs");
 const http = require("http");
-var folder;
-
-
-try {
-    folder = fs.mkdtempSync("testFile");
-} catch (err) {
-    console.log("Failed to create tmp directory");
-}
-
-let port = 8092;
 const args = process.argv.slice(2);
 var maxQueueCapacity = args[0] || 0;
 var waitStrutureTimeout = 5000;
 var nrOfSeconds = 5;
 var postCallsTimeout = args[1] || waitStrutureTimeout+nrOfSeconds*1000;
+var expectedMin = 500;
+var maxCounter = 0;
+var req;
+var remaining;
+var start, end;
 
-var expectedMin = 450;
-var postFlag = true;
-
-//var server = new Server(sslConfig).listen(port);
-function createServer(callback) {
-    var server = VirtualMQ.createVirtualMQ(port, folder, undefined, (err, res) => {
-        if (err) {
-            console.log("Failed to create VirtualMQ server on port ", port);
-            console.log("Trying again...");
-            if (port > 1024 && port < 50000) {
-                port++;
-                createServer(callback);
-            } else {
-                console.log("There is no available port to start VirtualMQ instance need it for test!");
-            }
-        } else {
-            console.log("Server ready and available on port ", port);
-            callback(server);
-        }
-    });
-}
-
-function createSwarmMessage(msg, finish) {
-    return JSON.stringify({
-        meta: {
-            swarmId: msg
-        }
-    });
-}
-
-
+const CHANNEL_NAME = Buffer.from('testChannel').toString('base64');
 const options = {
     host: '127.0.0.1',
-    port: port,
+    port: utils.port,
     path: '/' + CHANNEL_NAME,
     method: 'POST'
 };
-
-var maxCounter = 0;
-var req;
-var myInterval;
-var remaining;
-var start, end;
 
 function getDefaultMQCapacity(msg, finish) {
     req = http.request(options, (res) => {
@@ -88,7 +39,7 @@ function getDefaultMQCapacity(msg, finish) {
 
             //prepare bulk of requests
             for (let i = 0; i < maxQueueCapacity * 2; i++) {
-                messages.push(createSwarmMessage(i));
+                messages.push(utils.createSwarmMessage(i));
             }
             //-----------
 
@@ -99,7 +50,7 @@ function getDefaultMQCapacity(msg, finish) {
 
                 start = (new Date()).getTime();
                 setInterval(()=>{
-                    for (let j = 0; j < 50; j++) {
+                    for (let j = 0; j < 10; j++) {
                         try {
                             counter++;
                             postMessage(messages[j]);
@@ -113,10 +64,6 @@ function getDefaultMQCapacity(msg, finish) {
                     }
                 },1);
             }, waitStrutureTimeout);
-
-
-                //postMessage(createSwarmMessage('msg_' + counter), finish)
-
         });
     });
 
@@ -126,7 +73,6 @@ function getDefaultMQCapacity(msg, finish) {
 
     req.write(msg);
     req.end();
-
 }
 
 // Make a post with a message
@@ -159,18 +105,14 @@ function postMessage(message) {
         e.totalTime = end - start;
 
         throw e;
-
-
     });
     req.write(message);
     req.end();
-
 }
 
 
 function endAndCleanTest(finish) {
     console.log('Number of post messages sent to virtualMQ per second is: ', maxCounter/nrOfSeconds, ' total time ', end - start);
-
     assert.true(maxCounter > expectedMin*nrOfSeconds, 'virtualMQ failed after ' + maxCounter + ' post calls');
     utils.deleteFolder(folder);
     finish();
@@ -179,26 +121,25 @@ function endAndCleanTest(finish) {
 }
 
 function test(finish) {
-    getDefaultMQCapacity(createSwarmMessage('msg'), finish);
-    process.on
-    (
-        'uncaughtException',
-        function (err) {
-            console.log('MQ Fail ', err);
+    utils.createServer((server) =>{
+        getDefaultMQCapacity(utils.createSwarmMessage('msg'), finish);
+        process.on('uncaughtException', function (err) {
+                console.log('MQ Fail ', err);
+                utils.deleteFolder(folder);
+                process.exit(0);
+            }
+        );
+
+        setTimeout(() => {
             utils.deleteFolder(folder);
-            process.exit(0);
-        }
-    );
-
-    setTimeout(() => {
-        utils.deleteFolder(folder);
-        endAndCleanTest(finish);
-    }, postCallsTimeout);
-
-
+            endAndCleanTest(finish);
+        }, postCallsTimeout);
+  });
 }
 
-createServer((server) => {
+//creating the test folder
+utils.initVirtualMQ();
+console.log('________________________________');
+//calling the test function
+assert.callback("VirtualMQ stress test", test, postCallsTimeout + 1000);
 
-    assert.callback("VirtualMQ stress test", test, postCallsTimeout + 1000);
-});
