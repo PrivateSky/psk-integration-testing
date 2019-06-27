@@ -5,7 +5,7 @@ const agents = ['hq', 'mi6'];
 
 const swarms = {
     intel: {
-        public: {
+        local: {
             a2: 'integer',
             a1: {
                 a3: {
@@ -32,7 +32,7 @@ assert.callback(
             tir.interact('local', 'hq')
                 .startSwarm('intel', 'begin', 1, 2)
                 .onReturn(result => {
-                    console.log('Test should not pass. No ref allowed in object definition'); // finished();
+                    console.log('Test should not pass. No reference allowed in object definition'); // finished();
                 });
         });
     },
