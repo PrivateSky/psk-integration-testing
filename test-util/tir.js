@@ -41,9 +41,9 @@ assert.callback('Local connection testing', (finished) => {
 
 */
 
-require('./../../../builds/devel/pskruntime.js');
-require('./../../../builds/devel/psknode');
-require('./../../../builds/devel/consoleTools');
+require('./../../../psknode/bundles/pskruntime.js');
+require('./../../../psknode/bundles/psknode');
+require('./../../../psknode/bundles/consoleTools');
 
 const os = require('os');
 const path = require('path');

@@ -1,4 +1,4 @@
-const tir = require('../test-util/tir.js');
+const tir = require('../../../psknode/tests/util/tir');
 const assert = require('double-check').assert;
 const domain = 'superdomain';
 const agentName = "superAgent_"+Math.random().toString(36).substr(2, 9);

@@ -1,4 +1,4 @@
-const tir = require('../test-util/tir.js');
+const tir = require('../../../psknode/tests/util/tir');
 const assert = require('double-check').assert;
 const fs = require('fs');
 

@@ -1,5 +1,5 @@
 const utils = require('./testUtils');
-const tir = require('../test-util/tir.js');
+const tir = require('../../../psknode/tests/util/tir');
 const assert = require('double-check').assert;
 
 var args = process.argv.slice(2);

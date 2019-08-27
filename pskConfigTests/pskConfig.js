@@ -1,4 +1,4 @@
-require("../../../builds/devel/pskruntime.js");
+require("../../../psknode/bundles/pskruntime.js");
 const tir = require('../test-util/tir');
 
 const path = require("path");

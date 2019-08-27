@@ -1,5 +1,5 @@
 // require("../../../builds/devel/pskruntime");
-const tir = require('../test-util/tir.js')
+const tir = require('../../../psknode/tests/util/tir')
 require("callflow");
 require("launcher");
 const assert = require("double-check").assert;

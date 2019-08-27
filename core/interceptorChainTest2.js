@@ -8,8 +8,8 @@
             then check the "Developer mode" radio button (window "For developers")
 */
 
-require("../../../builds/devel/pskruntime");
-const tir = require('./../test-util/tir.js');
+require("../../../psknode/bundles/pskruntime");
+const tir = require('./../../../psknode/tests/util/tir');
 const assert = require('double-check').assert;
 
 const domain = 'local';

@@ -1,5 +1,5 @@
 var fs = require("fs");
-require("../../../builds/devel/pskruntime");
+require("../../../psknode/bundles/pskruntime");
 
 var beesHealer = require("swarmutils").beesHealer;
 var assert = require("double-check").assert;

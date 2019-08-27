@@ -1,5 +1,5 @@
-require("./../../../builds/devel/pskruntime.js");
-require('./../../../builds/devel/psknode');
+require("./../../../psknode/bundles/pskruntime.js");
+require('./../../../psknode/bundles/psknode');
 
 const path = require("path");
 const fs = require('fs');
@@ -42,7 +42,7 @@ assert.callback("Local connection testing", (callback)=> {
 	let localdomain = transaction.lookup("DomainReference", "local");
 	localdomain.init("system", "local");
 	localdomain.setWorkspace(path.resolve(localConfDir));
-	localdomain.setConstitution("../builds/devel/domain.js");
+	localdomain.setConstitution("../psknode/bundles/domain.js");
 	localdomain.addLocalInterface("local", localInterfaceDir);
 	transaction.add(localdomain);
 	$$.blockchain.commit(transaction);
