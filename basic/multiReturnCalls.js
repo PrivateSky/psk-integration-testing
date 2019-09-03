@@ -36,4 +36,4 @@ assert.callback('Multiple returns of a swarm', (finished) => {
         var cim = tir.interact(domain, agent).startSwarm('intel', 'doSomething');
         cim.onReturn(callback);
     });
-}, 5000);
+}, 6000);

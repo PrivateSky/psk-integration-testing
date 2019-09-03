@@ -33,4 +33,4 @@ var f = $$.swarms.describe("simpleSwarm", {
 })();
 assert.callback("SwarmBasic test",function (callback) {
     f.begin(1,2,callback);
-})
+}, 4000)

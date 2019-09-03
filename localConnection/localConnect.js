@@ -42,13 +42,13 @@ assert.callback("Local connection testing", (callback)=> {
 	let localdomain = transaction.lookup("DomainReference", "local");
 	localdomain.init("system", "local");
 	localdomain.setWorkspace(path.resolve(localConfDir));
-	localdomain.setConstitution("../psknode/bundles/domain.js");
+	localdomain.setConstitution("../../../psknode/bundles/domain.js");
 	localdomain.addLocalInterface("local", localInterfaceDir);
 	transaction.add(localdomain);
 	$$.blockchain.commit(transaction);
 
 	const child_process = require("child_process");
-	var testerNode = child_process.fork("./../../../engine/launcher", [localConfDir], {stdio:"inherit"});
+	let testerNode = child_process.fork("../../../psknode/core/launcher", [localConfDir], {stdio:"inherit"});
 
 	setTimeout(()=>{
 		const ni = interact.createNodeInteractionSpace("exampleAgent", path.resolve(path.join("..", "..", localInterfaceDir)), path.resolve(returnLocalInterfaceDir));

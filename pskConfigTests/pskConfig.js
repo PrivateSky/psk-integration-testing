@@ -122,7 +122,7 @@ try {
 
 
 const child_process = require("child_process");
-var testerNode = child_process.fork("./../../../engine/launcher", [localConfDir], {stdio: "inherit"});
+const testerNode = child_process.fork("../../../psknode/core/launcher", [localConfDir], {stdio: "inherit"});
 
 setTimeout(() => {
     let swarmStatus = false;
