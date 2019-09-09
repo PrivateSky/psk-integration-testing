@@ -1,4 +1,4 @@
-require("../../../../psknode/bundles/pskruntime");
+require("../../../psknode/bundles/pskruntime");
 require("callflow");
 const assert = require("double-check").assert;
 

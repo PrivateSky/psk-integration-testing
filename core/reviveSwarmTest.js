@@ -1,5 +1,5 @@
 const fs = require("fs");
-require("../../../../psknode/bundles/pskruntime");
+require("../../../psknode/bundles/pskruntime");
 
 const beesHealer = require("swarmutils").beesHealer;
 const assert = require("double-check").assert;
@@ -19,7 +19,7 @@ const f = $$.swarms.describe("simpleSwarm", {
     }
 });
 
-fs.mkdir("tmpSwarm", {recursive: true},  () => {
+assert.callback('Revive swarm test', (callback) => {
     beesHealer.asJSON(f().getInnerValue(), "begin", [1, 2], function (err, res) {
         console.log("writing done!");
         if (err) {
@@ -27,12 +27,9 @@ fs.mkdir("tmpSwarm", {recursive: true},  () => {
             return;
         }
 
-        fs.writeFileSync("./tmpSwarm/swarm", JSON.stringify(res));
-        const data = fs.readFileSync("./tmpSwarm/swarm");
-        const swarm = $$.swarmsInstancesManager.revive_swarm(JSON.parse(data.toString()));
+        const swarm = $$.swarmsInstancesManager.revive_swarm(JSON.parse(JSON.stringify(res)));
 
         assert.equal(swarm.result, 3, "Revitalisation failed");
-        fs.unlinkSync("./tmpSwarm/swarm");
-        console.log('test finished');
+        callback();
     });
 });

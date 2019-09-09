@@ -77,7 +77,7 @@ assert.callback(
 					assert.true(result.join('') === 'abc');
 				});
 		});
-		finish();
+		finished();
 		tir.tearDown(0);
 	},
 	3500
