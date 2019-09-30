@@ -7,52 +7,52 @@ const Archive = bar.Archive;
 const ArchiveConfigurator = bar.ArchiveConfigurator;
 const fs = require("fs");
 const crypto = require("crypto");
+const path = require("path");
 
-const folderPath = "fld";
-const filePath = "fld/a.txt";
-let savePath = "dot";
+double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
+
+    const folderPath = path.join(testFolder, "fld");
+    const filePath = path.join(testFolder, "fld/a.txt");
+    let savePath = path.join(testFolder, "dot");
 
 
-const folders = ["fld"];
-const files = [
-    "fld/a.txt", "fld/b.txt", "fld/c.txt"
-];
+    const folders = ["fld"].map(folder => path.join(testFolder, folder));
+    const files = ["fld/a.txt", "fld/b.txt", "fld/c.txt"].map(file => path.join(testFolder, file));
 
-const text = ["asta e un text?", "ana are mere", "hahahaha"];
+    const text = ["asta e un text?", "ana are mere", "hahahaha"];
 
-const archiveConfigurator = new ArchiveConfigurator();
-archiveConfigurator.setStorageProvider("FileBrickStorage", savePath);
-archiveConfigurator.setFsAdapter("FsAdapter");
-archiveConfigurator.setBufferSize(2);
-archiveConfigurator.setMapEncryptionKey(crypto.randomBytes(32));
+    const archiveConfigurator = new ArchiveConfigurator();
+    archiveConfigurator.setStorageProvider("FileBrickStorage", savePath);
+    archiveConfigurator.setFsAdapter("FsAdapter");
+    archiveConfigurator.setBufferSize(2);
+    archiveConfigurator.setMapEncryptionKey(crypto.randomBytes(32));
 
-const archive = new Archive(archiveConfigurator);
+    const archive = new Archive(archiveConfigurator);
 
-assert.callback("AddFolderExtractFile", (callback) => {
-    double_check.ensureFilesExist(folders, files, text, (err) => {
-        assert.true(err === null || typeof err === "undefined", "Failed to create folder hierarchy.");
 
-        archive.addFolder(folderPath, (err) => {
-            assert.true(err === null || typeof err === "undefined", "Failed to archive file.");
+    assert.callback("AddFolderExtractFile", (callback) => {
+        double_check.ensureFilesExist(folders, files, text, (err) => {
+            assert.true(err === null || typeof err === "undefined", "Failed to create folder hierarchy.");
 
-            double_check.deleteFoldersSync(folders);
-            assert.true(err === null || typeof err === "undefined", "Failed to delete file");
-
-            archive.extractFile(filePath, (err) => {
-                if (err) {
-                    throw err;
-                }
-                assert.true(err === null || typeof err === "undefined", "Failed to extract file.");
+            archive.addFolder(folderPath, (err) => {
+                assert.true(err === null || typeof err === "undefined", "Failed to archive file.");
 
                 double_check.deleteFoldersSync(folders);
+                assert.true(err === null || typeof err === "undefined", "Failed to delete file");
 
-                fs.unlink(savePath, (err) => {
-                    assert.true(err === null || typeof err === "undefined", "Failed to delete file " + savePath);
+                archive.extractFile(filePath, (err) => {
+                    assert.true(err === null || typeof err === "undefined", "Failed to extract file.");
 
-                    callback();
+                    double_check.deleteFoldersSync(folders);
+
+                    fs.unlink(savePath, (err) => {
+                        assert.true(err === null || typeof err === "undefined", "Failed to delete file " + savePath);
+
+                        callback();
+                    });
                 });
             });
         });
-    });
-}, 1500);
+    }, 1500);
+});
 
