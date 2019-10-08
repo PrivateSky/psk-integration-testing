@@ -73,13 +73,13 @@ $$.flows.describe("BarClone", {
 
     createArchive: function () {
         this.archiveConfigurator = new ArchiveConfigurator();
-        this.archiveConfigurator.setStorageProvider("FileBrickStorage", savePath);
+        this.archiveConfigurator.setStorageProvider("EDFSBrickStorage", this.url);
         this.archiveConfigurator.setFsAdapter("FsAdapter");
         this.archiveConfigurator.setBufferSize(2);
-        // this.archiveConfigurator.setMapEncryptionKey(crypto.randomBytes(32));
+        this.archiveConfigurator.setMapEncryptionKey(crypto.randomBytes(32));
         this.archive = new Archive(this.archiveConfigurator);
 
-        this.edfsBrickStorage = createEdfsBrickStorage(this.url);
+        this.fileBrickStorage = bar.createFileBrickStorage(savePath);
         this.addFolder();
     },
 
@@ -93,17 +93,16 @@ $$.flows.describe("BarClone", {
     },
 
     cloneBar: function () {
-        this.archive.clone(this.edfsBrickStorage, true, (err, mapDigest) => {
+        this.archive.clone(this.fileBrickStorage, true, (err, mapDigest) => {
             assert.true(err === null || typeof err === "undefined", `Failed to delete file ${filePath}`);
-            assert.true(mapDigest !== null && typeof mapDigest !== "undefined", "Map digest is null or undefined");
+            // assert.true(mapDigest !== null && typeof mapDigest !== "undefined", "Map digest is null or undefined");
 
-            this.archiveConfigurator.setMapDigest(mapDigest);
             this.extractFolder();
         });
     },
 
     extractFolder: function () {
-        this.archiveConfigurator.setStorageProvider("EDFSBrickStorage", this.url);
+        this.archiveConfigurator.setStorageProvider("FileBrickStorage", savePath);
         const archive = new Archive(this.archiveConfigurator);
         archive.extractFolder(folderPath, (err) => {
             assert.true(err === null || typeof err === "undefined", `Failed to extract folder from file ${savePath}`);
