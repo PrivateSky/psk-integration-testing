@@ -10,7 +10,6 @@ const assert = double_check.assert;
 const Archive = bar.Archive;
 const ArchiveConfigurator = bar.ArchiveConfigurator;
 const fs = require("fs");
-const crypto = require("crypto");
 const path = require("path");
 
 let folderPath;
@@ -40,33 +39,33 @@ $$.flows.describe("BarClone", {
                 assert.true(err === null || typeof err === "undefined", "Failed to compute folder hashes.");
 
                 this.initialHashes = initialHashes;
-                this.createServer();
+                this.createServer((err, server, url) => {
+                    assert.true(err === null || typeof err === "undefined", "Failed to create server.");
+
+                    this.server = server;
+                    this.url = url;
+                    this.createArchive();
+                });
             });
         });
 
     },
 
-    createServer: function () {
+    createServer: function (callback) {
         let server = VirtualMQ.createVirtualMQ(PORT, tempFolder, undefined, (err, res) => {
             if (err) {
                 console.log("Failed to create VirtualMQ server on port ", PORT);
                 console.log("Trying again...");
                 if (PORT > 0 && PORT < 50000) {
                     PORT++;
-                    this.createServer((err) => {
-                        if (err) {
-                            throw err;
-                        }
-                    });
+                    this.createServer(callback);
                 } else {
                     throw err;
                 }
             } else {
                 console.log("Server ready and available on port ", PORT);
                 let url = `http://127.0.0.1:${PORT}`;
-                this.server = server;
-                this.url = url;
-                this.createArchive();
+                callback(undefined, server, url);
             }
         });
     },
