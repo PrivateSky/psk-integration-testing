@@ -22,7 +22,7 @@ let cloneStoragePath;
 let folders;
 let files;
 
-let PORT = 9093;
+let PORT = 9090;
 const tempFolder = "../../tmp";
 
 const VirtualMQ = require("virtualmq");
