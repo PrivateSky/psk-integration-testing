@@ -104,7 +104,7 @@ $$.flows.describe("BarClone", {
     extractFolder: function () {
         this.archiveConfigurator.setStorageProvider("FileBrickStorage", savePath);
         const archive = new Archive(this.archiveConfigurator);
-        archive.extractFolder(folderPath, (err) => {
+        archive.extractFolder((err) => {
             assert.true(err === null || typeof err === "undefined", `Failed to extract folder from file ${savePath}`);
 
             double_check.computeFoldersHashes(folderPath, (err, newHashes) => {

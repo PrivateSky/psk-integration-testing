@@ -41,7 +41,7 @@ double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
                     double_check.deleteFoldersSync(folderPath);
                     assert.true(err === null || typeof err === "undefined", "Failed to delete folders.");
 
-                    archive.extractFolder(savePath, (err) => {
+                    archive.extractFolder((err) => {
                         assert.true(err === null || typeof err === "undefined", "Failed to extract folder.");
 
                         double_check.computeFoldersHashes([folderPath], (err, extractionHashes) => {
