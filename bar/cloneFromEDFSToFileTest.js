@@ -14,6 +14,7 @@ const crypto = require("crypto");
 const path = require("path");
 
 let folderPath;
+let destPath;
 let filePath;
 let savePath;
 let cloneStoragePath;
@@ -84,7 +85,7 @@ $$.flows.describe("BarClone", {
     },
 
     addFolder: function () {
-        this.archive.addFolder(folderPath, (err, mapDigest) => {
+        this.archive.addFolder(folderPath, destPath, (err, mapDigest) => {
             assert.true(err === null || typeof err === "undefined", "Failed to add folder.");
 
             double_check.deleteFoldersSync(folderPath);
@@ -95,7 +96,6 @@ $$.flows.describe("BarClone", {
     cloneBar: function () {
         this.archive.clone(this.fileBrickStorage, true, (err, mapDigest) => {
             assert.true(err === null || typeof err === "undefined", `Failed to delete file ${filePath}`);
-            // assert.true(mapDigest !== null && typeof mapDigest !== "undefined", "Map digest is null or undefined");
 
             this.extractFolder();
         });
@@ -107,7 +107,7 @@ $$.flows.describe("BarClone", {
         archive.extractFolder((err) => {
             assert.true(err === null || typeof err === "undefined", `Failed to extract folder from file ${savePath}`);
 
-            double_check.computeFoldersHashes(folderPath, (err, newHashes) => {
+            double_check.computeFoldersHashes(destPath, (err, newHashes) => {
                 assert.true(err === null || typeof err === "undefined", "Failed to compute folder hashes.");
                 assert.hashesAreEqual(this.initialHashes, newHashes, "The extracted files are not te same as the initial ones");
 
@@ -127,6 +127,7 @@ $$.flows.describe("BarClone", {
 double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
 
     folderPath = path.join(testFolder, "fld");
+    destPath = path.join(testFolder, "dest");
     savePath = path.join(testFolder, "dot");
     cloneStoragePath = path.join(testFolder, "aux");
 
