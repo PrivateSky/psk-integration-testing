@@ -38,19 +38,18 @@ double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
         double_check.computeFileHash(filePath, (err, initialHashes) => {
             assert.true(err === null || typeof err === "undefined", "Received error");
 
-            archive.addFile(filePath, filePath, (err) => {
+            archive.addFile(filePath, (err) => {
                 assert.true(err === null || typeof err === "undefined", "Failed to archive file.");
 
                 fs.unlink(filePath, (err) => {
                     assert.true(err === null || typeof err === "undefined", "Failed to delete file");
 
-                    archive.extractFile(filePath, filePath, (err) => {
+                    archive.extractFile(filePath, (err) => {
                         assert.true(err === null || typeof err === "undefined", "Failed to extract file.");
 
                         double_check.computeFileHash(filePath, (err, decompressedHashes) => {
                             assert.true(err === null || typeof err === "undefined", "Failed to compute folders hashes");
                             assert.true(initialHashes === decompressedHashes, "Files are not identical");
-
                             fs.unlink(savePath, (err) => {
                                 assert.true(err === null || typeof err === "undefined", "Failed to delete file " + savePath);
                                 fs.unlink(filePath, (err) => {

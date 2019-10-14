@@ -12,8 +12,7 @@ const path = require("path");
 double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
 
     const folderPath = path.join(testFolder, "fld");
-    const destinationPath = path.join(testFolder, "dest");
-    const filePath = path.join(destinationPath, "fld/a.txt");
+    const filePath = path.join(testFolder, "fld/a.txt");
     let savePath = path.join(testFolder, "dot");
 
 
@@ -35,13 +34,13 @@ double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
         double_check.ensureFilesExist(folders, files, text, (err) => {
             assert.true(err === null || typeof err === "undefined", "Failed to create folder hierarchy.");
 
-            archive.addFolder(folderPath, destinationPath,(err) => {
+            archive.addFolder(folderPath, (err) => {
                 assert.true(err === null || typeof err === "undefined", "Failed to archive file.");
 
                 double_check.deleteFoldersSync(folders);
                 assert.true(err === null || typeof err === "undefined", "Failed to delete file");
 
-                archive.extractFile(filePath, filePath, (err) => {
+                archive.extractFile(filePath, (err) => {
                     assert.true(err === null || typeof err === "undefined", "Failed to extract file.");
 
                     double_check.deleteFoldersSync(folders);

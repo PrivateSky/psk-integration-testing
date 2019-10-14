@@ -34,7 +34,7 @@ double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
             double_check.computeFoldersHashes([folderPath], (err, initialHashes) => {
                 assert.true(err === null || typeof err === "undefined", "Failed to compute folder hashes.");
 
-                archive.addFolder(folderPath, folderPath, (err, mapDigest) => {
+                archive.addFolder(folderPath, (err, mapDigest) => {
                     assert.true(err === null || typeof err === "undefined", "Failed to add folder.");
                     assert.true(mapDigest !== null && typeof mapDigest !== "undefined", "Map digest is null or undefined.");
 
@@ -44,7 +44,7 @@ double_check.createTestFolder("bar_test_folder", (err, testFolder) => {
                     archive.extractFolder((err) => {
                         assert.true(err === null || typeof err === "undefined", "Failed to extract folder.");
 
-                        double_check.computeFoldersHashes([folderPath], (err, extractionHashes) => {
+                        double_check.computeFoldersHashes(folderPath, (err, extractionHashes) => {
                             assert.true(err === null || typeof err === "undefined", "Failed to compute folder hashes.");
                             assert.true(assert.hashesAreEqual(initialHashes, extractionHashes), "Folder hashes do not coincide.");
 
