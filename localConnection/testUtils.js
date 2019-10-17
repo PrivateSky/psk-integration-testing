@@ -1,5 +1,4 @@
 const tir = require('../../../psknode/tests/util/tir');
-const assert = require('double-check').assert;
 
 exports.intervalSize;
 exports.noOfDomains;
